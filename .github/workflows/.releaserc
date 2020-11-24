@@ -1,0 +1,15 @@
+﻿branches:
+  - name: master
+  - name: dev
+    prerelease: alpha
+plugins:
+  - - "@semantic-release/commit-analyzer"
+    - preset: conventionalcommits
+  - - "@semantic-release/release-notes-generator"
+    - preset: conventionalcommits
+  - - "@semantic-release/github"
+    - assets:
+        - path: ../../artifacts/*.nupkg
+          label: Parser DLL
+  - - "@semantic-release/exec"
+    - publishCmd: "dotnet nuget push ../../artifacts/*.nupkg --api-key $NugetApiKey --source https://api.nuget.org/v3/index.json"

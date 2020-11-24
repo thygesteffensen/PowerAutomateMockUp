@@ -1,0 +1,33 @@
+#name: Build
+#
+#on:
+#  push:
+#    branches: [ dev ]
+#    pull_request: [ master, dev]
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#    name: Build and Test
+#    env:
+#      projectName: "Parser"
+#      testName: "Test" 
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Setup dotnet
+#        uses: actions/setup-dotnet@v1
+#        with:
+#          dotnet-version: '3.1.x'
+#      - name: Install dependencies
+#        run: dotnet restore
+#      - name: Building projects
+#        run: dotnet build --configuration Release --no-restore -o build
+#      - name: Running Tests
+#        run: dotnet test --verbosity normal
+#      - name: Archive build to artifacts
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: build
+#          path: |
+#            build/Parser.dll   
+#          retention-days: 5
