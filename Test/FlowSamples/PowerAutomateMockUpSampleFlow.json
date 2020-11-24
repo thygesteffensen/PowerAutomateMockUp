@@ -1,0 +1,173 @@
+{
+  "name": "acbb2513-8cf0-4d71-9e98-c493301da6e4",
+  "id": "/providers/Microsoft.Flow/flows/acbb2513-8cf0-4d71-9e98-c493301da6e4",
+  "type": "Microsoft.Flow/flows",
+  "properties": {
+    "apiId": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+    "displayName": "PowerAutomateMockUpSampleFlow",
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "When_an_Account_is_created": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 1,
+              "subscriptionRequest/entityname": "account",
+              "subscriptionRequest/scope": 4
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "Condition:_If_Account_Name_is_not_null": {
+          "actions": {},
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Terminate": {
+                "runAfter": {},
+                "type": "Terminate",
+                "inputs": {
+                  "runStatus": "Succeeded"
+                }
+              }
+            }
+          },
+          "expression": {
+            "not": {
+              "equals": [
+                "@triggerOutputs()?['body/name']",
+                "@null"
+              ]
+            }
+          },
+          "type": "If"
+        },
+        "Scope:_Try": {
+          "actions": {
+            "Get_a_record_-_Valid_Id": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "GetItem",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "accounts",
+                  "recordId": "@triggerOutputs()?['body/accountid']"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Update_Account_-_Invalid_Id": {
+              "runAfter": {
+                "Get_a_record_-_Valid_Id": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "accounts",
+                  "recordId": "InvalidId"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {
+            "Condition:_If_Account_Name_is_not_null": [
+              "Succeeded"
+            ]
+          },
+          "type": "Scope"
+        },
+        "Scope:_Catch": {
+          "actions": {
+            "Send_me_an_email_notification": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_flowpush",
+                  "operationId": "SendEmailNotification",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowpush"
+                },
+                "parameters": {
+                  "NotificationEmailDefinition/notificationSubject": "A new Account have been added",
+                  "NotificationEmailDefinition/notificationBody": "A new Account with @{triggerOutputs()?['body/name']}"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {
+            "Scope:_Try": [
+              "Failed"
+            ]
+          },
+          "type": "Scope"
+        },
+        "Update_Account_-_Valid_Id": {
+          "runAfter": {
+            "Scope:_Catch": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "UpdateRecord",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "accounts",
+              "recordId": "@triggerOutputs()?['body/accountid']"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      },
+      "shared_flowpush": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_flowpush",
+        "tier": "NotSpecified"
+      }
+    },
+    "flowFailureAlertSubscribed": false
+  }
+}
