@@ -3,31 +3,39 @@ name: Build
 on:
   push:
     branches: [ dev ]
-    pull_request: [ master, dev]
+    pull_request: [ master, dev ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: Build and Test
-    env:
-      projectName: "Parser"
-      testName: "Test" 
+  test:
+    runs-on: windows-latest
+    name: Testing
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install dependencies
-        run: dotnet restore
-      - name: Building projects
-        run: dotnet build --configuration Release --no-restore -o build
-      - name: Running Tests
+      - name: Checkout code base
+        uses: actions/checkout@v2
+
+      - name: Run tests
         run: dotnet test --verbosity normal
+
+  build:
+    runs-on: windows-latest
+    name: Building
+    steps:
+      - name: Checkout code base
+        uses: actions/checkout@v2
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Restore NuGet packages
+        run: nuget restore PowerAutomateMockUp.sln
+
+      - name: Build solution
+        run: msbuild /p:OutputPath=../build /p:Configuration=Release /p:RestorePackages=false
+
       - name: Archive build to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build
           path: |
-            build/Parser.dll   
+            build/PowerAutomateMockUp.dll   
           retention-days: 5
