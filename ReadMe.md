@@ -1,7 +1,7 @@
 <h1 align="center">PowerAutomateMockUp</h1>
 <h3 align="center">Skeleton to run Power Automate Flows from Json Flow definition.</h3>
 <p align="center">
-    <img alt="Build status" src="https://img.shields.io/github/workflow/status/thygesteffensen/PowerAutomateMockUp/Build/main">
+    <!--<img alt="Build status" src="https://img.shields.io/github/workflow/status/thygesteffensen/PowerAutomateMockUp/Build/main">-->
         <img alt="Build status" src="https://img.shields.io/github/workflow/status/thygesteffensen/PowerAutomateMockUp/Build/dev">
     <a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
         <img alt="Nuget downloads" src="https://img.shields.io/nuget/dt/PowerAutomateMockUp">
@@ -9,16 +9,16 @@
     <a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
         <img alt="Nuget version" src="https://img.shields.io/nuget/v/PowerAutomateMockUp">
     </a>
-    <a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
-        <img alt="Nuget prerelease version" src="https://img.shields.io/nuget/vpre/PowerAutomateMockUp">
+    <!--<a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
+        <img alt="Nuget prerelease version" src="https://img.shields.io/nuget/vpre/PowerAutomateMockUp">-->
     </a>
 </p>
 <p align="center">
     <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Index">Home</a>
     |
-    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Index">Getting Started</a>
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/GettingStarted">Getting Started</a>
     |
-    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Index">Technical</a>
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Technical">Technical</a>
 </p>
 
 Currently there is not a way to unit test Power Automate flows. You have the ability to manually run a flow with static results, but this isn't the same as a unit test. I have during my work implemented business critical functionality in Power Automate using Common Data Service (current environment) connector, whiteout being able to test it properly, when developing Flows and Plugins to Dynamics 365. 
@@ -46,11 +46,13 @@ This is a skeleton and itself will not test anything OOB. Instead this is meant 
 ```c#
 var path = "<path to flow definition>";
             
-var services = new ServiceCollection(); // from Microsoft.Extensions.DependencyInjection
+// from Microsoft.Extensions.DependencyInjection
+var services = new ServiceCollection();
 
 services.Configure<FlowSettings>(x => { });
 
-services.AddFlowRunner(); // Required to set up required dependencies
+// Required to set up required dependencies
+services.AddFlowRunner(); 
 
 var sp = services.BuildServiceProvider();
 
@@ -60,7 +62,7 @@ flowRunner.InitializeFlowRunner(path);
 
 await flowRunner.Trigger();
 
-// Your flow have no ran
+// Your flow have now ran
 ```
 
 ### Adding actions
@@ -79,7 +81,10 @@ When the action named *Get_forecast_for_today_(Metric)* is reached and about to 
 
 #### 2. Using Connection ApiId and supported OperationIds
 ```c#
-services.AddFlowActionByApiIdAndOperationsName<Notification>("/providers/Microsoft.PowerApps/apis/shared_flowpush", new []{ "SendEmailNotification", "SendNotification" }); // For OpenApiConnection connectors only
+// For OpenApiConnection connectors only
+services.AddFlowActionByApiIdAndOperationsName<Notification>(
+    "/providers/Microsoft.PowerApps/apis/shared_flowpush", 
+    new []{ "SendEmailNotification", "SendNotification" });
 ```
 
 When an action from the **Notification** connector with one of the supported types is reached in the flow, a action executor instance of type Notification is created and used.
@@ -111,7 +116,8 @@ private class ActionExecutor : DefaultBaseActionExecutor
     {
         // ... Execute action functionality
 
-        return Task.FromResult(new ActionResult {ActionStatus = ActionStatus.Succeeded});
+        return Task.FromResult(
+            new ActionResult {ActionStatus = ActionStatus.Succeeded});
     }
 }
 ```
@@ -133,7 +139,8 @@ private class ActionExecutor : OpenApiConnectionActionExecutorBase
 
         var entityName = parameters["string"].GetValue<string>();
 
-        return Task.FromResult(new ActionResult {ActionStatus = ActionStatus.Failed});
+        return Task.FromResult(
+            new ActionResult {ActionStatus = ActionStatus.Failed});
     }
 }
 ```
@@ -160,7 +167,7 @@ IState, and its implementation, is how the state of the execution of a Power Aut
 
 This is my bachelor project and I'm currently not accepting contributions until it have been handed in. Anyway, fell free to drop an issue with a suggestion or improvement.
 
-## Credits
+<!--## Credits-->
 
 
 ## License
