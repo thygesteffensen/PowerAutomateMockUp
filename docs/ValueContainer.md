@@ -1,4 +1,11 @@
-﻿## Value container
+﻿<p align="center">
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Index">Home</a>
+    |
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/GettingStarted">Getting Started</a>
+    |
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Technical">Technical</a>
+</p>
+## Value container
 
 Value Container is the internal representation of values in Power Automate Mockup. The representation is used throughout both the FlowRunner and the Expression Parser to ensure consistency.
 

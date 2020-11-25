@@ -1,4 +1,11 @@
-﻿## Getting Started
+﻿<p align="center">
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Index">Home</a>
+    |
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/GettingStarted">Getting Started</a>
+    |
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Technical">Technical</a>
+</p>
+## Getting Started
 
 This is a my bachelor project and thus not yet ready to be used in production.
 

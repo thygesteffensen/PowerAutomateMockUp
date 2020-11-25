@@ -1,4 +1,11 @@
-﻿# Terminology
+﻿<p align="center">
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Index">Home</a>
+    |
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/GettingStarted">Getting Started</a>
+    |
+    <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Technical">Technical</a>
+</p>
+# Terminology
 
 ## Json
 Action from Json is called actionDescriptions
