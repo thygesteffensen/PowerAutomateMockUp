@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFrameworks>netcoreapp3.1;net48;net462</TargetFrameworks>
 
         <LangVersion>8</LangVersion> <!-- Max version when using dotnet framework -->
 
@@ -12,7 +12,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />

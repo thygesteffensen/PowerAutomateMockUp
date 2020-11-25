@@ -258,10 +258,6 @@ namespace Test
 
         public class TestInput
         {
-            public TestInput()
-            {
-            }
-
             public TestInput(string input, string expectedOutput)
             {
                 Input = input;
