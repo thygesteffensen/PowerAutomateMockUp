@@ -16,7 +16,7 @@
 
         public string PrettyPrint()
         {
-            return _content.ToString();
+            return _content.Type() == ValueContainer.ValueType.String? $"'{_content}'" : _content.ToString();
         }
     }
 }
