@@ -20,12 +20,13 @@ namespace Test
         public async Task TestFlowFalse()
         {
             var path = @$"{TestFlowPath}\PowerAutomateMockUpSampleFlow.json";
-            
+
             var services = new ServiceCollection();
-            
+
             services.Configure<FlowSettings>(x => { });
 
-            services.AddFlowActionByApiIdAndOperationsName<TriggerActionExecutor>(TriggerActionExecutor.ApiId, TriggerActionExecutor.SupportedOperations);
+            services.AddFlowActionByApiIdAndOperationsName<TriggerActionExecutor>(TriggerActionExecutor.ApiId,
+                TriggerActionExecutor.SupportedOperations);
 
             services.AddFlowActionByName<Second>(Second.FlowActionName);
             services.AddFlowActionByApiIdAndOperationsName<Third>(Third.ApiId, Third.SupportedOperations);
@@ -43,11 +44,11 @@ namespace Test
             await flowRunner.Trigger();
 
             var state = sp.GetRequiredService<IState>();
-            
+
             Assert.IsTrue(state.GetOutputs("SecondOutput").Type() != ValueContainer.ValueType.Null);
             Assert.IsTrue(state.GetOutputs("ThirdOutput").Type() != ValueContainer.ValueType.Null);
             Assert.IsTrue(state.GetOutputs("FourthOutput").Type() == ValueContainer.ValueType.Null);
-         
+
             Assert.IsTrue(state.GetOutputs("SecondOutput").GetValue<bool>(), "Second action wasn't triggered");
             Assert.IsTrue(state.GetOutputs("ThirdOutput").GetValue<bool>(), "Third action wasn't triggered");
         }
@@ -86,7 +87,7 @@ namespace Test
             public override Task<ActionResult> Execute()
             {
                 _state.AddOutputs("SecondOutput", new ValueContainer(true));
-                
+
                 return Task.FromResult(new ActionResult {ActionStatus = ActionStatus.Failed});
             }
 
