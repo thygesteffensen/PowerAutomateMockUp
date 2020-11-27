@@ -121,6 +121,50 @@ namespace Parser.ExpressionParser
             return _value;
         }
 
+        public ValueContainer this[int i]
+        {
+            get
+            {
+                if (_type != ValueType.Array)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on arrays.");
+                }
+
+                return ((List<ValueContainer>) _value)[i];
+            }
+            set
+            {
+                if (_type != ValueType.Array)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on arrays.");
+                }
+
+                ((List<ValueContainer>) _value)[i] = value;
+            }
+        }
+
+        public ValueContainer this[string key]
+        {
+            get
+            {
+                if (_type != ValueType.Object)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on objects.");
+                }
+
+                return ((Dictionary<string, ValueContainer>) _value)[key];
+            }
+            set
+            {
+                if (_type != ValueType.Object)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on objects.");
+                }
+
+                ((Dictionary<string, ValueContainer>) _value)[key] = value;
+            }
+        }
+
         public override string ToString()
         {
             /*

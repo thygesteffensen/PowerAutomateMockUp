@@ -55,40 +55,5 @@ namespace Test
 
             Assert.AreEqual(ValueContainer.ValueType.Null, retrievedOutput.Type());
         }
-
-        [Test]
-        public void TestNormalizeValueContainer()
-        {
-            var valueContainer = new ValueContainer(new Dictionary<string, ValueContainer>
-            {
-                {"body/contactid", new ValueContainer("guid")},
-                {"body/fullname", new ValueContainer("John Doe")},
-                {"body", new ValueContainer(new Dictionary<string, ValueContainer>
-                {
-                    {"child/one", new ValueContainer("Child 1")},
-                    {"child/two", new ValueContainer("Child 2")}
-                })},
-                {"body/child/three", new ValueContainer("Child 3")},
-            });
-
-            var inner = valueContainer.GetValue<Dictionary<string, ValueContainer>>();
-            
-            Assert.AreEqual(1, inner.Keys.Count);
-
-            var body = inner["body"].GetValue<Dictionary<string, ValueContainer>>();
-            
-            Assert.AreEqual(3, body.Keys.Count);
-            
-            Assert.AreEqual("guid", body["contactid"].GetValue<string>());
-            Assert.AreEqual("John Doe", body["fullname"].GetValue<string>());
-
-            var children = body["child"].GetValue<Dictionary<string, ValueContainer>>();
-            
-            Assert.AreEqual(3, children.Keys.Count);
-            
-            Assert.AreEqual("Child 1", children["one"].GetValue<string>());
-            Assert.AreEqual("Child 2", children["two"].GetValue<string>());
-            Assert.AreEqual("Child 3", children["three"].GetValue<string>());
-        }
     }
 }
