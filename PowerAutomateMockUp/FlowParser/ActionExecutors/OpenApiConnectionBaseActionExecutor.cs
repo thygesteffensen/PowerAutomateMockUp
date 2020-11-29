@@ -28,7 +28,7 @@ namespace Parser.FlowParser.ActionExecutors
             var inputs = Json.SelectToken("$..inputs");
             var content = inputs.ToObject<ActionInputs>();
             Host = content.HostValues;
-            Parameters = new Dictionary<string, ValueContainer>();
+            Parameters = new ValueContainer(new Dictionary<string, ValueContainer>());
             foreach (var keyValuePar in content.Parameters)
             {
                 // TODO: Here is an use case where the engine could have just returned a Value Container instead!
@@ -38,7 +38,7 @@ namespace Parser.FlowParser.ActionExecutors
 
         protected HostValues Host { get; set; }
 
-        protected Dictionary<string, ValueContainer> Parameters { get; set; }
+        protected ValueContainer Parameters { get; set; }
     }
 
     internal class ActionInputs
