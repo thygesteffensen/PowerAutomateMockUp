@@ -79,9 +79,7 @@ namespace Test
 
             public override Task<ActionResult> Execute()
             {
-                var outputs =
-                    _triggerOutputsRetriever.GetTriggerOutputs().GetValue<Dictionary<string, ValueContainer>>()["body"]
-                        .GetValue<Dictionary<string, ValueContainer>>();
+                var outputs =_triggerOutputsRetriever.GetTriggerOutputs()["body"];
                 Assert.AreEqual("Alice Bob", outputs["name"].GetValue<string>());
 
                 return Task.FromResult(new ActionResult());

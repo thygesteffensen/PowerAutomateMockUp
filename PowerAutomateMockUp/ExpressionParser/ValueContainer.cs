@@ -152,7 +152,15 @@ namespace Parser.ExpressionParser
                     throw new InvalidOperationException("Index operations can only be performed on objects.");
                 }
 
-                return ((Dictionary<string, ValueContainer>) _value)[key];
+                var keyPath = key.Split('/');
+                
+                var current = GetValue<Dictionary<string, ValueContainer>>()[keyPath.First()];
+                foreach (var xKey in keyPath.Skip(1))
+                {
+                    current = current.GetValue<Dictionary<string, ValueContainer>>()[xKey]; // Does not
+                }
+
+                return current;
             }
             set
             {
@@ -161,7 +169,27 @@ namespace Parser.ExpressionParser
                     throw new InvalidOperationException("Index operations can only be performed on objects.");
                 }
 
-                ((Dictionary<string, ValueContainer>) _value)[key] = value;
+                var keyPath = key.Split('/');
+                var finalKey = keyPath.Last();
+
+                var current = _value;
+                foreach (var xKey in keyPath.Take(keyPath.Length-1))
+                {
+                    var dict = GetValue<Dictionary<string, ValueContainer>>();
+                    var success = dict.TryGetValue(xKey, out var temp);
+
+                    if (success)
+                    {
+                        current = temp;
+                    }
+                    else
+                    {
+                        dict[xKey] = new ValueContainer(new Dictionary<string, ValueContainer>());
+                        current = dict[xKey].GetValue<Dictionary<string, ValueContainer>>();
+                    }
+                }
+
+                current[finalKey] = value;
             }
         }
 

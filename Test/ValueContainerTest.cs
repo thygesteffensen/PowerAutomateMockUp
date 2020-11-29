@@ -15,29 +15,31 @@ namespace Test
             {
                 {"body/contactid", new ValueContainer("guid")},
                 {"body/fullname", new ValueContainer("John Doe")},
-                {"body", new ValueContainer(new Dictionary<string, ValueContainer>
                 {
-                    {"child/one", new ValueContainer("Child 1")},
-                    {"child/two", new ValueContainer("Child 2")}
-                })},
+                    "body", new ValueContainer(new Dictionary<string, ValueContainer>
+                    {
+                        {"child/one", new ValueContainer("Child 1")},
+                        {"child/two", new ValueContainer("Child 2")}
+                    })
+                },
                 {"body/child/three", new ValueContainer("Child 3")},
             });
 
-            var inner = valueContainer.GetValue<Dictionary<string, ValueContainer>>();
-            
-            Assert.AreEqual(1, inner.Keys.Count);
+            var inner = valueContainer;
+
+            Assert.AreEqual(1, inner.GetValue<Dictionary<string, ValueContainer>>().Keys.Count);
 
             var body = inner["body"].GetValue<Dictionary<string, ValueContainer>>();
-            
+
             Assert.AreEqual(3, body.Keys.Count);
-            
+
             Assert.AreEqual("guid", body["contactid"].GetValue<string>());
             Assert.AreEqual("John Doe", body["fullname"].GetValue<string>());
 
-            var children = body["child"].GetValue<Dictionary<string, ValueContainer>>();
-            
-            Assert.AreEqual(3, children.Keys.Count);
-            
+            var children = body["child"];
+
+            Assert.AreEqual(3, children.GetValue<Dictionary<string, ValueContainer>>().Keys.Count);
+
             Assert.AreEqual("Child 1", children["one"].GetValue<string>());
             Assert.AreEqual("Child 2", children["two"].GetValue<string>());
             Assert.AreEqual("Child 3", children["three"].GetValue<string>());
@@ -59,15 +61,15 @@ namespace Test
                 new ValueContainer("Item 8"),
                 new ValueContainer("Item 9")
             });
-            
+
             Assert.AreEqual("Item 5", valueContainer[5].GetValue<string>());
 
             var newValue8 = "New item 8";
-            valueContainer[8]= new ValueContainer(newValue8);
-            
+            valueContainer[8] = new ValueContainer(newValue8);
+
             Assert.AreEqual(newValue8, valueContainer[8].GetValue<string>());
         }
-        
+
         [Test]
         public void TestArrayIndexerFailure()
         {
@@ -78,7 +80,7 @@ namespace Test
                 var temp = valueContainer[0];
             });
             Assert.AreEqual(exception1.Message, "Index operations can only be performed on arrays.");
-            
+
             var exception2 = Assert.Throws<InvalidOperationException>(() =>
             {
                 valueContainer[0] = new ValueContainer(100f);
@@ -91,19 +93,21 @@ namespace Test
         {
             var valueContainer = new ValueContainer(new Dictionary<string, ValueContainer>
             {
-                {"body", new ValueContainer(new Dictionary<string, ValueContainer>
                 {
-                    {"name", new ValueContainer("James P. \"Sulley\" Sullivan")}
-                })}
+                    "body", new ValueContainer(new Dictionary<string, ValueContainer>
+                    {
+                        {"name", new ValueContainer("James P. \"Sulley\" Sullivan")}
+                    })
+                }
             });
-            
+
             Assert.AreEqual(ValueContainer.ValueType.Object, valueContainer["body"].Type());
-            
+
             Assert.AreEqual("James P. \"Sulley\" Sullivan", valueContainer["body"]["name"].GetValue<string>());
 
             var guidStr = Guid.NewGuid().ToString();
             valueContainer["body"]["id"] = new ValueContainer(guidStr);
-            
+
             Assert.AreEqual(guidStr, valueContainer["body"]["id"].GetValue<string>());
         }
 
@@ -116,15 +120,25 @@ namespace Test
             {
                 var temp = valueContainer["name"];
             });
-            Assert.AreEqual("Index operations can only be performed on objects.",exception1.Message);
+            Assert.AreEqual("Index operations can only be performed on objects.", exception1.Message);
 
-            
+
             var exception2 = Assert.Throws<InvalidOperationException>(() =>
             {
                 valueContainer["name"] = new ValueContainer("Mendel Stromm");
             });
+
+            Assert.AreEqual("Index operations can only be performed on objects.", exception2.Message);
+        }
+
+        [Test]
+        public void TestObjectIndexerKeyPath()
+        {
+            var valueContainer = new ValueContainer(new Dictionary<string, ValueContainer>());
             
-            Assert.AreEqual("Index operations can only be performed on objects.",exception2.Message);
+            valueContainer["body/name"] = new ValueContainer("John Doe");
+            
+            Assert.AreEqual("John Doe", valueContainer["body/name"].GetValue<string>());
         }
     }
 }
