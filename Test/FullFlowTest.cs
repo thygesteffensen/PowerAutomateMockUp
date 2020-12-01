@@ -87,6 +87,8 @@ namespace Test
             public override Task<ActionResult> Execute()
             {
                 _state.AddOutputs("SecondOutput", new ValueContainer(true));
+                
+                Assert.AreEqual(FlowActionName, ActionName);
 
                 return Task.FromResult(new ActionResult {ActionStatus = ActionStatus.Failed});
             }
@@ -106,6 +108,8 @@ namespace Test
             public override Task<ActionResult> Execute()
             {
                 _state.AddOutputs("ThirdOutput", new ValueContainer(true));
+                
+                Assert.AreEqual("Send_me_an_email_notification", ActionName);
 
                 Console.WriteLine($"Email Title: {Parameters["NotificationEmailDefinition/notificationSubject"]}");
                 Console.WriteLine($"Email Content: {Parameters["NotificationEmailDefinition/notificationBody"]}");
@@ -131,6 +135,8 @@ namespace Test
             public override Task<ActionResult> Execute()
             {
                 _state.AddOutputs("ThirdOutput", new ValueContainer(true));
+                
+                Assert.AreEqual(FlowActionName, ActionName);
 
                 return Task.FromResult(new ActionResult());
             }
@@ -142,6 +148,8 @@ namespace Test
 
             public override Task<ActionResult> Execute()
             {
+                Assert.AreEqual(FlowActionName, ActionName);
+
                 return Task.FromResult(new ActionResult());
             }
 

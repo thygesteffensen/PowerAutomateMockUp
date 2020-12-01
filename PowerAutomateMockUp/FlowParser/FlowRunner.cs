@@ -55,7 +55,7 @@ namespace Parser.FlowParser
         public async Task Trigger()
         {
             var trigger = GetActionExecutor(_trigger);
-            
+
             trigger.AddJson(_trigger.Value);
             await trigger.Execute();
 
@@ -148,6 +148,7 @@ namespace Parser.FlowParser
                     "Register an Action either by Action Name or by its type in order to run this Flow."); // TODO: Create Exception
             }
 
+            action?.InitializeActionExecutor(currentAction.Name);
             return action;
         }
     }
