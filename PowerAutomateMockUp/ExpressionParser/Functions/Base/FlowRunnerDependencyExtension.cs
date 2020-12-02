@@ -36,6 +36,7 @@ namespace Parser.ExpressionParser.Functions.Base
 
             services.AddFlowActionByFlowType<IfActionExecutor>("If");
             services.AddFlowActionByFlowType<ScopeActionExecutor>("Scope");
+            services.AddFlowActionByFlowType<TerminateActionExecutor>("Terminate");
 
             // services.AddLogging();
             

@@ -16,6 +16,8 @@
         /// This is perhaps not necessary. 
         /// </summary>
         public ActionStatus ActionStatus { get; set; } = ActionStatus.Succeeded;
+
+        public bool ContinueExecution { get; set; } = true;
     }
 
     public enum ActionStatus

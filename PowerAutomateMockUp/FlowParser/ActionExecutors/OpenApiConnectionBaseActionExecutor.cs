@@ -15,17 +15,16 @@ namespace Parser.FlowParser.ActionExecutors
             _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
         }
 
-        public override void AddJson(JToken json)
+        protected override void ProcessJson()
         {
-            Json = json ?? throw new ArgumentNullException(nameof(json));
-            var type = json.SelectToken("$.type").Value<string>();
+            var type = Json.SelectToken("$.type").Value<string>();
 
             if (type != "OpenApiConnection")
                 throw new InvalidOperationException(
                     "The expected Action Description type was OpenApiConnection, but the " +
                     $"Action Description type was {type}.");
 
-            var inputs = Json.SelectToken("$..inputs");
+            var inputs = Json.SelectToken("$.inputs");
             var content = inputs.ToObject<ActionInputs>();
             Host = content.HostValues;
             Parameters = new ValueContainer(new Dictionary<string, ValueContainer>());

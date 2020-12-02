@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Parser.ExpressionParser
 {
@@ -36,6 +37,11 @@ namespace Parser.ExpressionParser
                 {
                     _value = bValue;
                     _type = ValueType.Boolean;
+                }
+                else
+                {
+                    _value = value;
+                    _type = ValueType.String;
                 }
             }
             else
@@ -100,6 +106,12 @@ namespace Parser.ExpressionParser
             _value = null;
         }
 
+        public ValueContainer(JToken json)
+        {
+            _type = ValueType.Object;
+            _value = JsonToValueContainer(json).GetValue<Dictionary<string, ValueContainer>>();
+        }
+
         public ValueType Type()
         {
             return _type;
@@ -153,7 +165,7 @@ namespace Parser.ExpressionParser
                 }
 
                 var keyPath = key.Split('/');
-                
+
                 var current = GetValue<Dictionary<string, ValueContainer>>()[keyPath.First()];
                 foreach (var xKey in keyPath.Skip(1))
                 {
@@ -173,7 +185,7 @@ namespace Parser.ExpressionParser
                 var finalKey = keyPath.Last();
 
                 var current = _value;
-                foreach (var xKey in keyPath.Take(keyPath.Length-1))
+                foreach (var xKey in keyPath.Take(keyPath.Length - 1))
                 {
                     var dict = GetValue<Dictionary<string, ValueContainer>>();
                     var success = dict.TryGetValue(xKey, out var temp);
@@ -193,6 +205,32 @@ namespace Parser.ExpressionParser
             }
         }
 
+        private ValueContainer JsonToValueContainer(JToken json)
+        {
+            if (json.GetType() == typeof(JObject))
+            {
+                var dictionary = json.ToDictionary(pair => ((JProperty) pair).Name, token =>
+                {
+                    if (token.Children().Count() != 1) return JsonToValueContainer(token.Children().First());
+
+                    var t = token.First;
+                    return t.Type switch
+                    {
+                        JTokenType.String => new ValueContainer(t.Value<string>(), true),
+                        JTokenType.Boolean => new ValueContainer(t.Value<bool>()),
+                        JTokenType.Integer => new ValueContainer(t.Value<int>()),
+                        JTokenType.Float => new ValueContainer(t.Value<float>()),
+                        _ => JsonToValueContainer(token.Children().First())
+                    };
+                });
+
+                return new ValueContainer(dictionary);
+            }
+
+            throw new Exception();
+        }
+
+
         public override string ToString()
         {
             /*
@@ -201,9 +239,9 @@ namespace Parser.ExpressionParser
              */
             return _type switch
             {
-                ValueType.Boolean => _value,
-                ValueType.Integer => _value,
-                ValueType.Float => _value,
+                ValueType.Boolean => _value.ToString(),
+                ValueType.Integer => _value.ToString(),
+                ValueType.Float => _value.ToString(),
                 ValueType.String => _value,
                 ValueType.Object => "{" + string.Join(",", GetValue<Dictionary<string, ValueContainer>>()
                     .Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}",
@@ -211,6 +249,11 @@ namespace Parser.ExpressionParser
                 ValueType.Null => "<null>",
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+
+        public bool IsNull()
+        {
+            return _type == ValueType.Null;
         }
     }
 
