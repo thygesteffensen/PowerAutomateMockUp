@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Parser.ExpressionParser;
 
@@ -135,10 +137,53 @@ namespace Test
         public void TestObjectIndexerKeyPath()
         {
             var valueContainer = new ValueContainer(new Dictionary<string, ValueContainer>());
-            
+
             valueContainer["body/name"] = new ValueContainer("John Doe");
-            
+
             Assert.AreEqual("John Doe", valueContainer["body/name"].GetValue<string>());
+        }
+
+        [Test]
+        public void TestJsonToValueContainerSimple()
+        {
+            var json = JToken.Parse("{\"Terminate\":{\"Key1\":\"Value1\",\"Key2\":\"Value2\"}}");
+            
+            var valueContainer = new ValueContainer(json);
+            
+            Assert.IsTrue(valueContainer.GetValue<Dictionary<string, ValueContainer>>().ContainsKey("Terminate"));
+            Assert.AreEqual(1,valueContainer.GetValue<Dictionary<string, ValueContainer>>().Count);
+            
+            Assert.AreEqual(2, valueContainer["Terminate"].GetValue<Dictionary<string,ValueContainer>>().Count);
+        }
+        
+        [Test]
+        public void TestJsonToValueContainerTypicalInputSection()
+        {
+            var json = JToken.Parse(
+                "{\"inputs\": {\"host\": {\"connectionName\": \"shared_commondataserviceforapps\",\"operationId\": \"GetItem\"," +
+                "\"apiId\": \"/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps\"}," +
+                "\"parameters\": {\"entityName\": \"accounts\",\"recordId\": \"@triggerOutputs()?['body/accountid']\"}," +
+                "\"authentication\": \"@parameters('$authentication')\"}}");
+            
+            var valueContainer = new ValueContainer(json);
+            
+            Assert.IsTrue(valueContainer.GetValue<Dictionary<string, ValueContainer>>().ContainsKey("inputs"));
+            Assert.AreEqual(1,valueContainer.GetValue<Dictionary<string, ValueContainer>>().Count);
+
+            var inputs = valueContainer["inputs"];
+            var inputsDict= valueContainer["inputs"].GetValue<Dictionary<string, ValueContainer>>();
+            
+            Assert.IsTrue(inputsDict.ContainsKey("host"));
+            Assert.IsTrue(inputsDict.ContainsKey("parameters"));
+            Assert.IsTrue(inputsDict.ContainsKey("authentication"));
+
+            Assert.AreEqual(3,inputs.GetValue<Dictionary<string,ValueContainer>>().Count);
+
+            var host = inputs["host"];
+            Assert.AreEqual(3,host.GetValue<Dictionary<string,ValueContainer>>().Count);
+            
+            var parameters = inputs["parameters"];
+            Assert.AreEqual(2,parameters.GetValue<Dictionary<string,ValueContainer>>().Count);
         }
     }
 }
