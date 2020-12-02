@@ -56,7 +56,7 @@ namespace Parser.FlowParser
         {
             var trigger = GetActionExecutor(_trigger);
 
-            trigger.AddJson(_trigger.Value);
+            trigger.InitializeActionExecutor(_trigger.Name ,_trigger.Value);
             await trigger.Execute();
 
             await RunFlow();
@@ -82,6 +82,10 @@ namespace Parser.FlowParser
                 var actionExecutor = GetActionExecutor(currentAd);
 
                 var actionResult = await ExecuteAction(actionExecutor, currentAd);
+                if (!actionResult.ContinueExecution)
+                {
+                    break;
+                }
 
                 var actionDescName = currentAd.Name;
                 while (!DetermineNextAction(actionResult, out currentAd, actionDescName))
@@ -113,11 +117,11 @@ namespace Parser.FlowParser
         }
 
         private static async Task<ActionResult> ExecuteAction(ActionExecutorBase actionExecutor,
-            JToken currentAction)
+            JProperty currentAction)
         {
             if (actionExecutor == null) return null;
 
-            actionExecutor.AddJson(currentAction.First);
+            actionExecutor.InitializeActionExecutor(currentAction.Name ,currentAction.First);
             return await actionExecutor.Execute();
         }
 
@@ -148,7 +152,6 @@ namespace Parser.FlowParser
                     "Register an Action either by Action Name or by its type in order to run this Flow."); // TODO: Create Exception
             }
 
-            action?.InitializeActionExecutor(currentAction.Name);
             return action;
         }
     }
