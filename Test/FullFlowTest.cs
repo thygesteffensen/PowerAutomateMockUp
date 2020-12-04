@@ -93,7 +93,7 @@ namespace Test
                 return Task.FromResult(new ActionResult {ActionStatus = ActionStatus.Failed});
             }
 
-            public Second(ExpressionEngine expressionEngine, IState state) : base(expressionEngine)
+            public Second(IExpressionEngine expressionEngine, IState state) : base(expressionEngine)
             {
                 _state = state ?? throw new ArgumentNullException(nameof(state));
             }
@@ -116,7 +116,7 @@ namespace Test
                 return Task.FromResult(new ActionResult());
             }
 
-            public Third(ExpressionEngine expressionEngine, IState state) : base(expressionEngine)
+            public Third(IExpressionEngine expressionEngine, IState state) : base(expressionEngine)
             {
                 _state = state ?? throw new ArgumentNullException(nameof(state));
             }
@@ -127,7 +127,7 @@ namespace Test
             private readonly IState _state;
             public const string FlowActionName = "Get_a_record_-_Valid_Id";
 
-            public Fourth(ExpressionEngine expressionEngine, IState state) : base(expressionEngine)
+            public Fourth(IExpressionEngine expressionEngine, IState state) : base(expressionEngine)
             {
                 _state = state ?? throw new ArgumentNullException(nameof(state));
             }
@@ -153,7 +153,7 @@ namespace Test
                 return Task.FromResult(new ActionResult());
             }
 
-            public Fifth(ExpressionEngine expressionEngine) : base(expressionEngine)
+            public Fifth(IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
         }

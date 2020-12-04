@@ -10,9 +10,9 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
     {
         private const string Or = "or";
         private const string And = "and";
-        private readonly ExpressionEngine _expressionEngine;
+        private readonly IExpressionEngine _expressionEngine;
 
-        public IfActionExecutor(ExpressionEngine expressionEngine)
+        public IfActionExecutor(IExpressionEngine expressionEngine)
         {
             _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
         }

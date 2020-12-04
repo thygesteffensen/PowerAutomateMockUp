@@ -22,7 +22,7 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddScoped<IVariableRetriever>(x => x.GetRequiredService<IState>());
             services.AddScoped<IOutputsRetriever>(x => x.GetRequiredService<IState>());
             services.AddScoped<ITriggerOutputsRetriever>(x => x.GetRequiredService<IState>());
-            services.AddScoped<ExpressionEngine>();
+            services.AddScoped<IExpressionEngine, ExpressionEngine>();
             services.AddScoped<ExpressionGrammar>();
 
             services.AddTransient<IFunction, ConcatFunction>();
@@ -37,9 +37,8 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddFlowActionByFlowType<IfActionExecutor>("If");
             services.AddFlowActionByFlowType<ScopeActionExecutor>("Scope");
             services.AddFlowActionByFlowType<TerminateActionExecutor>("Terminate");
-
-            // services.AddLogging();
             
+            services.AddLogging();
         }
 
         public static void AddFlowActionByName<T>(this IServiceCollection services, string actionName)

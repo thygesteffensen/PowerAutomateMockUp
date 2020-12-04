@@ -1,6 +1,11 @@
 ﻿namespace Parser.ExpressionParser
 {
-    public class ExpressionEngine
+    public interface IExpressionEngine
+    {
+        string Parse(string input);
+    }
+
+    public class ExpressionEngine : IExpressionEngine
     {
         private readonly ExpressionGrammar _expressionGrammar;
 

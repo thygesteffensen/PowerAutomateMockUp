@@ -8,9 +8,9 @@ namespace Parser.FlowParser.ActionExecutors
 {
     public abstract class OpenApiConnectionActionExecutorBase : ActionExecutorBase
     {
-        private readonly ExpressionEngine _expressionEngine;
+        private readonly IExpressionEngine _expressionEngine;
 
-        protected OpenApiConnectionActionExecutorBase(ExpressionEngine expressionEngine)
+        protected OpenApiConnectionActionExecutorBase(IExpressionEngine expressionEngine)
         {
             _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
         }
