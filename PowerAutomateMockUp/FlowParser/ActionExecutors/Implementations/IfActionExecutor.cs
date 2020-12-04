@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Parser.ExpressionParser;
 
@@ -10,11 +11,13 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
     {
         private const string Or = "or";
         private const string And = "and";
-        private readonly ExpressionEngine _expressionEngine;
+        private readonly IExpressionEngine _expressionEngine;
+        private readonly ILogger<IfActionExecutor> _logger;
 
-        public IfActionExecutor(ExpressionEngine expressionEngine)
+        public IfActionExecutor(IExpressionEngine expressionEngine, ILogger<IfActionExecutor> logger)
         {
             _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // https://en.wikipedia.org/wiki/Short-circuit_evaluation
@@ -26,6 +29,8 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
             var type = expression.Properties().ToList()[0].Name;
             var result = ParseGroup(expression, type);
+            
+            _logger.LogInformation($"Condition action '{ActionName}' evaluated {result}.");
 
             if (result)
             {
@@ -52,7 +57,6 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                 }
             }
 
-            // return new Task<ActionResult>(() => new ActionResult());
             return Task.FromResult(new ActionResult());
         }
 

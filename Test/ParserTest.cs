@@ -29,7 +29,7 @@ namespace Test
         public void TestSimpleInputExpectFail(TestInput testInput)
         {
             var sp = BuildServiceProvider();
-            var engine = sp.GetRequiredService<ExpressionEngine>();
+            var engine = sp.GetRequiredService<IExpressionEngine>();
             var state = sp.GetRequiredService<IState>();
 
             AddValuesToState(testInput.VariableKey, testInput.ValueContainers, testInput.StorageOption, state);
@@ -88,7 +88,7 @@ namespace Test
         public void TestSimpleInput(TestInput testInput)
         {
             var sp = BuildServiceProvider();
-            var engine = sp.GetRequiredService<ExpressionEngine>();
+            var engine = sp.GetRequiredService<IExpressionEngine>();
 
             var result = engine.Parse(testInput.Input);
 
@@ -125,7 +125,7 @@ namespace Test
         public void TestTriggerOutputs(TestInput testInput)
         {
             var sp = BuildServiceProvider();
-            var engine = sp.GetRequiredService<ExpressionEngine>();
+            var engine = sp.GetRequiredService<IExpressionEngine>();
             var state = sp.GetRequiredService<IState>();
             state.AddTriggerOutputs(testInput.ValueContainers.First());
 
@@ -194,7 +194,7 @@ namespace Test
         public void TestInternalsFlowStorage(TestInput input)
         {
             var sp = BuildServiceProvider();
-            var engine = sp.GetRequiredService<ExpressionEngine>();
+            var engine = sp.GetRequiredService<IExpressionEngine>();
             var state = sp.GetRequiredService<IState>();
 
             AddValuesToState(input.VariableKey, input.ValueContainers, input.StorageOption, state);

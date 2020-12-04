@@ -3,7 +3,8 @@ name: Build
 on:
   push:
     branches: [ dev ]
-    pull_request: [ master, dev ]
+    pull_request:
+      types: [assigned, opened, synchronize, reopened]
 
 jobs:
   test:

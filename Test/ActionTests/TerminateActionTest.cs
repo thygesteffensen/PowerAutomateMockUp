@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Parser.ExpressionParser.Functions.Base;
 using Parser.FlowParser.ActionExecutors;
+using Parser.FlowParser.ActionExecutors.Implementations;
 using Parser.FlowParser.CustomExceptions;
 
 namespace Test.ActionTests
@@ -14,12 +15,14 @@ namespace Test.ActionTests
         [Test]
         public async Task TerminateSucceededTest()
         {
-            var collection = new ServiceCollection();
+            /*var collection = new ServiceCollection();
             collection.AddFlowRunner();
 
             var sp = collection.BuildServiceProvider();
             var actionExecutorFactory = sp.GetRequiredService<ActionExecutorFactory>();
-            var action = actionExecutorFactory.ResolveActionByType("Terminate");
+            var action = actionExecutorFactory.ResolveActionByType("Terminate");*/
+
+            var action = new TerminateActionExecutor(TestLogger.Create<TerminateActionExecutor>());
 
             var json =
                 "{\"Terminate\": { \"runAfter\": {}, \"type\": \"Terminate\", \"inputs\": { \"runStatus\": \"Succeeded\" } } }";

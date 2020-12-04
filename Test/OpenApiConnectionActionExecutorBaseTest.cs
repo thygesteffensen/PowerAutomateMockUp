@@ -72,7 +72,7 @@ namespace Test
             public static readonly string ApiId = "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps";
             public static readonly string[] OperationIds = {"UpdateRecord"};
 
-            public OpenApiConnectionAction(ExpressionEngine expressionEngine, ITriggerOutputsRetriever triggerOutputsRetriever) : base(expressionEngine)
+            public OpenApiConnectionAction(IExpressionEngine expressionEngine, ITriggerOutputsRetriever triggerOutputsRetriever) : base(expressionEngine)
             {
                 _triggerOutputsRetriever = triggerOutputsRetriever ?? throw new ArgumentNullException(nameof(triggerOutputsRetriever));
             }
