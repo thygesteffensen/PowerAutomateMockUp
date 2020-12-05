@@ -1,3 +1,0 @@
-﻿## Technical
-
-No content yet

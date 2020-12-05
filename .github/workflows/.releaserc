@@ -1,0 +1,22 @@
+﻿branches:
+  - name: main
+  - name: dev
+    prerelease: alpha
+
+plugins:
+  - - "@semantic-release/commit-analyzer"
+    - preset: conventionalcommits
+
+  - - "@semantic-release/release-notes-generator"
+    - preset: conventionalcommits
+
+  - - "@semantic-release/github"
+    - assets:
+        - path: ../../artifacts/PowerAutomateMockUp.*.nupkg
+          label: Parser DLL
+
+  - - "@semantic-release/exec"
+    - publishCmd: "dotnet nuget push ..\\..\\artifacts\\PowerAutomateMockUp.*.nupkg --source https://nuget.pkg.github.com/thygesteffensen/index.json --api-key ${process.env.GITHUB_TOKEN}"
+
+  - - "@semantic-release/exec"
+    - publishCmd: "dotnet nuget push ..\\..\\artifacts\\PowerAutomateMockUp.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${process.env.CI_NUGET_API_KEY}"

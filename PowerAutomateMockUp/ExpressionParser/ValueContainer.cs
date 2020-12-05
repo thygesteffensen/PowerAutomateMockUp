@@ -2,69 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Parser.ExpressionParser
 {
-    static class ValueContainerExtensions
-    {
-        public static Dictionary<string, ValueContainer> Normalize(this Dictionary<string, ValueContainer> input)
-        {
-            var temp = new Dictionary<string, ValueContainer>();
-
-            foreach (var keyValuePair in input)
-            {
-                var keys = keyValuePair.Key.Split('/');
-
-                BuildNest(keys, keyValuePair.Value, new ValueContainer(temp, false));
-            }
-
-            return temp;
-        }
-
-        private static ValueContainer BuildNest(string[] keys, ValueContainer value, ValueContainer current)
-        {
-            if (keys.Length == 1)
-            {
-                var dict = current.GetValue<Dictionary<string, ValueContainer>>();
-                if (dict.ContainsKey(keys[0]) && value.Type() == ValueContainer.ValueType.Object)
-                {
-                    var innerDict = dict[keys[0]].GetValue<Dictionary<string, ValueContainer>>();
-                    var valueDict = value.GetValue<Dictionary<string, ValueContainer>>();
-                    foreach (var keyValuePair in valueDict)
-                    {
-                        innerDict[keyValuePair.Key] = keyValuePair.Value;
-                    }
-                }
-                else
-                {
-                    dict[keys[0]] = value;
-                }
-                // TODO: Do similiar check
-
-                return new ValueContainer(dict, false);
-            }
-            else
-            {
-                var dict = current.GetValue<Dictionary<string, ValueContainer>>();
-
-                if (dict.ContainsKey(keys.First()))
-                {
-                    var innerDict = dict[keys.First()].GetValue<Dictionary<string, ValueContainer>>();
-
-                    BuildNest(keys.Skip(1).ToArray(), value, new ValueContainer(innerDict, false));
-                }
-                else
-                {
-                    var t = BuildNest(keys.Skip(1).ToArray(), value,
-                        new ValueContainer(new Dictionary<string, ValueContainer>(), false));
-                    dict[keys.First()] = t;
-                }
-
-                return new ValueContainer(dict, false);
-            }
-        }
-    }
-
     [JsonConverter(typeof(ValueContainerConverter))]
     public class ValueContainer
     {
@@ -96,6 +37,11 @@ namespace Parser.ExpressionParser
                 {
                     _value = bValue;
                     _type = ValueType.Boolean;
+                }
+                else
+                {
+                    _value = value;
+                    _type = ValueType.String;
                 }
             }
             else
@@ -135,7 +81,7 @@ namespace Parser.ExpressionParser
             _type = ValueType.Array;
         }
 
-        public ValueContainer(Dictionary<string, ValueContainer> objectValue, bool normalize)
+        internal ValueContainer(Dictionary<string, ValueContainer> objectValue, bool normalize)
         {
             _value = normalize ? objectValue.Normalize() : objectValue;
 
@@ -160,6 +106,12 @@ namespace Parser.ExpressionParser
             _value = null;
         }
 
+        public ValueContainer(JToken json)
+        {
+            _type = ValueType.Object;
+            _value = JsonToValueContainer(json).GetValue<Dictionary<string, ValueContainer>>();
+        }
+
         public ValueType Type()
         {
             return _type;
@@ -181,6 +133,113 @@ namespace Parser.ExpressionParser
             return _value;
         }
 
+        public ValueContainer this[int i]
+        {
+            get
+            {
+                if (_type != ValueType.Array)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on arrays.");
+                }
+
+                return ((List<ValueContainer>) _value)[i];
+            }
+            set
+            {
+                if (_type != ValueType.Array)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on arrays.");
+                }
+
+                ((List<ValueContainer>) _value)[i] = value;
+            }
+        }
+
+        public ValueContainer this[string key]
+        {
+            get
+            {
+                if (_type != ValueType.Object)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on objects.");
+                }
+
+                var keyPath = key.Split('/');
+
+                var current = GetValue<Dictionary<string, ValueContainer>>()[keyPath.First()];
+                foreach (var xKey in keyPath.Skip(1))
+                {
+                    current = current.GetValue<Dictionary<string, ValueContainer>>()[xKey]; // Does not
+                }
+
+                return current;
+            }
+            set
+            {
+                if (_type != ValueType.Object)
+                {
+                    throw new InvalidOperationException("Index operations can only be performed on objects.");
+                }
+
+                var keyPath = key.Split('/');
+                var finalKey = keyPath.Last();
+
+                var current = _value;
+                foreach (var xKey in keyPath.Take(keyPath.Length - 1))
+                {
+                    var dict = GetValue<Dictionary<string, ValueContainer>>();
+                    var success = dict.TryGetValue(xKey, out var temp);
+
+                    if (success)
+                    {
+                        current = temp;
+                    }
+                    else
+                    {
+                        dict[xKey] = new ValueContainer(new Dictionary<string, ValueContainer>());
+                        current = dict[xKey].GetValue<Dictionary<string, ValueContainer>>();
+                    }
+                }
+
+                current[finalKey] = value;
+            }
+        }
+
+        private Dictionary<string, ValueContainer> AsDict()
+        {
+            if (_type == ValueType.Object)
+            {
+                return GetValue<Dictionary<string, ValueContainer>>();
+            }
+            throw new PowerAutomateMockUpException("Can't get none object value container as dict.");
+        }
+
+        private ValueContainer JsonToValueContainer(JToken json)
+        {
+            if (json.GetType() == typeof(JObject))
+            {
+                var dictionary = json.ToDictionary(pair => ((JProperty) pair).Name, token =>
+                {
+                    if (token.Children().Count() != 1) return JsonToValueContainer(token.Children().First());
+
+                    var t = token.First;
+                    return t.Type switch
+                    {
+                        JTokenType.String => new ValueContainer(t.Value<string>(), true),
+                        JTokenType.Boolean => new ValueContainer(t.Value<bool>()),
+                        JTokenType.Integer => new ValueContainer(t.Value<int>()),
+                        JTokenType.Float => new ValueContainer(t.Value<float>()),
+                        _ => JsonToValueContainer(token.Children().First())
+                    };
+                });
+
+                return new ValueContainer(dictionary);
+            }
+
+            throw new Exception();
+        }
+
+
         public override string ToString()
         {
             /*
@@ -189,9 +248,9 @@ namespace Parser.ExpressionParser
              */
             return _type switch
             {
-                ValueType.Boolean => _value,
-                ValueType.Integer => _value,
-                ValueType.Float => _value,
+                ValueType.Boolean => _value.ToString(),
+                ValueType.Integer => _value.ToString(),
+                ValueType.Float => _value.ToString(),
                 ValueType.String => _value,
                 ValueType.Object => "{" + string.Join(",", GetValue<Dictionary<string, ValueContainer>>()
                     .Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}",
@@ -199,6 +258,70 @@ namespace Parser.ExpressionParser
                 ValueType.Null => "<null>",
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+
+        public bool IsNull()
+        {
+            return _type == ValueType.Null;
+        }
+    }
+
+    static class ValueContainerExtensions
+    {
+        public static Dictionary<string, ValueContainer> Normalize(this Dictionary<string, ValueContainer> input)
+        {
+            var temp = new Dictionary<string, ValueContainer>();
+
+            foreach (var keyValuePair in input)
+            {
+                var keys = keyValuePair.Key.Split('/');
+
+                BuildNest(keys, keyValuePair.Value, new ValueContainer(temp, false));
+            }
+
+            return temp;
+        }
+
+        private static ValueContainer BuildNest(string[] keys, ValueContainer value, ValueContainer current)
+        {
+            if (keys.Length == 1)
+            {
+                var dict = current.GetValue<Dictionary<string, ValueContainer>>();
+                if (dict.ContainsKey(keys[0]) && value.Type() == ValueContainer.ValueType.Object)
+                {
+                    var innerDict = dict[keys[0]].GetValue<Dictionary<string, ValueContainer>>();
+                    var valueDict = value.GetValue<Dictionary<string, ValueContainer>>();
+                    foreach (var keyValuePair in valueDict)
+                    {
+                        innerDict[keyValuePair.Key] = keyValuePair.Value;
+                    }
+                }
+                else
+                {
+                    dict[keys[0]] = value;
+                }
+
+                return new ValueContainer(dict, false);
+            }
+            else
+            {
+                var dict = current.GetValue<Dictionary<string, ValueContainer>>();
+
+                if (dict.ContainsKey(keys.First()))
+                {
+                    var innerDict = dict[keys.First()].GetValue<Dictionary<string, ValueContainer>>();
+
+                    BuildNest(keys.Skip(1).ToArray(), value, new ValueContainer(innerDict, false));
+                }
+                else
+                {
+                    var t = BuildNest(keys.Skip(1).ToArray(), value,
+                        new ValueContainer(new Dictionary<string, ValueContainer>(), false));
+                    dict[keys.First()] = t;
+                }
+
+                return new ValueContainer(dict, false);
+            }
         }
     }
 }

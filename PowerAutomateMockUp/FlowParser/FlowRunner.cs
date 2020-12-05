@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -56,8 +55,8 @@ namespace Parser.FlowParser
         public async Task Trigger()
         {
             var trigger = GetActionExecutor(_trigger);
-            
-            trigger.AddJson(_trigger.Value);
+
+            trigger.InitializeActionExecutor(_trigger.Name ,_trigger.Value);
             await trigger.Execute();
 
             await RunFlow();
@@ -83,6 +82,10 @@ namespace Parser.FlowParser
                 var actionExecutor = GetActionExecutor(currentAd);
 
                 var actionResult = await ExecuteAction(actionExecutor, currentAd);
+                if (!actionResult.ContinueExecution)
+                {
+                    break;
+                }
 
                 var actionDescName = currentAd.Name;
                 while (!DetermineNextAction(actionResult, out currentAd, actionDescName))
@@ -114,11 +117,11 @@ namespace Parser.FlowParser
         }
 
         private static async Task<ActionResult> ExecuteAction(ActionExecutorBase actionExecutor,
-            JToken currentAction)
+            JProperty currentAction)
         {
             if (actionExecutor == null) return null;
 
-            actionExecutor.AddJson(currentAction.First);
+            actionExecutor.InitializeActionExecutor(currentAction.Name ,currentAction.First);
             return await actionExecutor.Execute();
         }
 

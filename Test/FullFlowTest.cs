@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -16,18 +14,19 @@ namespace Test
     [TestFixture]
     public class FullFlowTest
     {
-        private static readonly string TestFlowPath = System.IO.Path.GetFullPath(@"..\..\..\FlowSamples");
+        private static readonly string TestFlowPath = System.IO.Path.GetFullPath(@"FlowSamples");
 
         [Test]
         public async Task TestFlowFalse()
         {
             var path = @$"{TestFlowPath}\PowerAutomateMockUpSampleFlow.json";
-            
+
             var services = new ServiceCollection();
-            
+
             services.Configure<FlowSettings>(x => { });
 
-            services.AddFlowActionByApiIdAndOperationsName<TriggerActionExecutor>(TriggerActionExecutor.ApiId, TriggerActionExecutor.SupportedOperations);
+            services.AddFlowActionByApiIdAndOperationsName<TriggerActionExecutor>(TriggerActionExecutor.ApiId,
+                TriggerActionExecutor.SupportedOperations);
 
             services.AddFlowActionByName<Second>(Second.FlowActionName);
             services.AddFlowActionByApiIdAndOperationsName<Third>(Third.ApiId, Third.SupportedOperations);
@@ -45,11 +44,11 @@ namespace Test
             await flowRunner.Trigger();
 
             var state = sp.GetRequiredService<IState>();
-            
+
             Assert.IsTrue(state.GetOutputs("SecondOutput").Type() != ValueContainer.ValueType.Null);
             Assert.IsTrue(state.GetOutputs("ThirdOutput").Type() != ValueContainer.ValueType.Null);
             Assert.IsTrue(state.GetOutputs("FourthOutput").Type() == ValueContainer.ValueType.Null);
-         
+
             Assert.IsTrue(state.GetOutputs("SecondOutput").GetValue<bool>(), "Second action wasn't triggered");
             Assert.IsTrue(state.GetOutputs("ThirdOutput").GetValue<bool>(), "Third action wasn't triggered");
         }
@@ -89,10 +88,12 @@ namespace Test
             {
                 _state.AddOutputs("SecondOutput", new ValueContainer(true));
                 
+                Assert.AreEqual(FlowActionName, ActionName);
+
                 return Task.FromResult(new ActionResult {ActionStatus = ActionStatus.Failed});
             }
 
-            public Second(ExpressionEngine expressionEngine, IState state) : base(expressionEngine)
+            public Second(IExpressionEngine expressionEngine, IState state) : base(expressionEngine)
             {
                 _state = state ?? throw new ArgumentNullException(nameof(state));
             }
@@ -107,13 +108,15 @@ namespace Test
             public override Task<ActionResult> Execute()
             {
                 _state.AddOutputs("ThirdOutput", new ValueContainer(true));
+                
+                Assert.AreEqual("Send_me_an_email_notification", ActionName);
 
                 Console.WriteLine($"Email Title: {Parameters["NotificationEmailDefinition/notificationSubject"]}");
                 Console.WriteLine($"Email Content: {Parameters["NotificationEmailDefinition/notificationBody"]}");
                 return Task.FromResult(new ActionResult());
             }
 
-            public Third(ExpressionEngine expressionEngine, IState state) : base(expressionEngine)
+            public Third(IExpressionEngine expressionEngine, IState state) : base(expressionEngine)
             {
                 _state = state ?? throw new ArgumentNullException(nameof(state));
             }
@@ -124,7 +127,7 @@ namespace Test
             private readonly IState _state;
             public const string FlowActionName = "Get_a_record_-_Valid_Id";
 
-            public Fourth(ExpressionEngine expressionEngine, IState state) : base(expressionEngine)
+            public Fourth(IExpressionEngine expressionEngine, IState state) : base(expressionEngine)
             {
                 _state = state ?? throw new ArgumentNullException(nameof(state));
             }
@@ -132,6 +135,8 @@ namespace Test
             public override Task<ActionResult> Execute()
             {
                 _state.AddOutputs("ThirdOutput", new ValueContainer(true));
+                
+                Assert.AreEqual(FlowActionName, ActionName);
 
                 return Task.FromResult(new ActionResult());
             }
@@ -143,10 +148,12 @@ namespace Test
 
             public override Task<ActionResult> Execute()
             {
+                Assert.AreEqual(FlowActionName, ActionName);
+
                 return Task.FromResult(new ActionResult());
             }
 
-            public Fifth(ExpressionEngine expressionEngine) : base(expressionEngine)
+            public Fifth(IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
         }
