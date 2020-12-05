@@ -205,6 +205,15 @@ namespace Parser.ExpressionParser
             }
         }
 
+        private Dictionary<string, ValueContainer> AsDict()
+        {
+            if (_type == ValueType.Object)
+            {
+                return GetValue<Dictionary<string, ValueContainer>>();
+            }
+            throw new PowerAutomateMockUpException("Can't get none object value container as dict.");
+        }
+
         private ValueContainer JsonToValueContainer(JToken json)
         {
             if (json.GetType() == typeof(JObject))
