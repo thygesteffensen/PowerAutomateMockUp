@@ -170,6 +170,7 @@ This is my bachelor project and I'm currently not accepting contributions until 
 <!--## Credits-->
 
 
+
 ## License
 
 © Thyge Skødt Steffensen
