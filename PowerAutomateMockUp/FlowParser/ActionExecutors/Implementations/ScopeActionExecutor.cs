@@ -16,17 +16,19 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
         public override Task<ActionResult> Execute()
         {
-            var scopeActionJson = Json.Parent;
-            var scopeName = ((JProperty) scopeActionJson).Name;
-
             var scopeActionDescriptions = Json.SelectToken("$.actions").OfType<JProperty>();
             var actionDescriptions = scopeActionDescriptions as JProperty[] ?? scopeActionDescriptions.ToArray();
-            
-            _scopeDepthManager.Push(scopeName, actionDescriptions);
+
+            _scopeDepthManager.Push(ActionName, actionDescriptions, null);
 
             var firstScopeAction = actionDescriptions.First(ad => !ad.Value.SelectToken("$.runAfter").Any());
 
             return Task.FromResult(new ActionResult {NextAction = firstScopeAction.Name});
         }
+    }
+
+    public interface IScopeActionExecutor
+    {
+        public Task<ActionResult> ExitScope(ActionStatus scopeStatus);
     }
 }
