@@ -205,7 +205,7 @@ namespace Parser.ExpressionParser
             }
         }
 
-        private Dictionary<string, ValueContainer> AsDict()
+        public Dictionary<string, ValueContainer> AsDict()
         {
             if (_type == ValueType.Object)
             {

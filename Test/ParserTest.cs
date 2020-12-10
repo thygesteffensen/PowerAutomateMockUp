@@ -136,17 +136,17 @@ namespace Test
 
         private static object[] _triggerOutputTest =
         {
-            new TestInput("@triggerOutputs()['body/dca_entrytype']", "OCR payment")
+            new TestInput("@triggerOutputs()['body/entrytype']", "OCR payment")
             {
                 ValueContainers = new[]
                 {
                     new ValueContainer(new Dictionary<string, ValueContainer>
                     {
-                        {"body/dca_entrytype", new ValueContainer("OCR payment")}
+                        {"body/entrytype", new ValueContainer("OCR payment")}
                     })
                 }
             },
-            /*new TestInput("@triggerOutputs()?['body/dca_entrytype']", null)
+            /*new TestInput("@triggerOutputs()?['body/entrytype']", null)
             {
                 ValueContainers = new[]
                 {
