@@ -40,7 +40,7 @@ namespace Parser.FlowParser
             var flowJson = JToken.ReadFrom(jsonTextReader);
             var flowDefinition = flowJson.SelectToken("$.*.definition");
             _trigger = flowDefinition.SelectToken("$.triggers").First as JProperty;
-            _scopeManager.Push("root", flowDefinition.SelectToken("$.actions").OfType<JProperty>());
+            _scopeManager.Push("root", flowDefinition.SelectToken("$.actions").OfType<JProperty>(), null);
         }
 
         public async Task<object> Trigger(ValueContainer triggerOutputs)
@@ -56,7 +56,7 @@ namespace Parser.FlowParser
         {
             var trigger = GetActionExecutor(_trigger);
 
-            trigger.InitializeActionExecutor(_trigger.Name ,_trigger.Value);
+            trigger.InitializeActionExecutor(_trigger.Name, _trigger.Value);
             await trigger.Execute();
 
             await RunFlow();
@@ -72,9 +72,8 @@ namespace Parser.FlowParser
                 if (_flowRunnerSettings.IgnoreActions.Contains(currentAd.Name))
                 {
                     currentAd = _scopeManager.CurrentActionDescriptions.FirstOrDefault(a =>
-                        a.Value.SelectToken("$.runAfter").First?.ToObject<JProperty>().Name ==
-                        currentAd.Name &&
-                        a.Value.SelectToken("$.runAfter.*").Values().Any(
+                        a.Value.SelectToken("$.runAfter").First?.ToObject<JProperty>().Name == currentAd.Name
+                        && a.Value.SelectToken("$.runAfter.*").Values().Any(
                             x => x?.Value<string>() == ActionStatus.Succeeded.ToString()));
                     continue;
                 }
@@ -87,30 +86,43 @@ namespace Parser.FlowParser
                     break;
                 }
 
+                // If an action failes inside a scope, and a suitable action isn't found inside the given scope, that 
+                // actions status is transferred to be the scope status. This isn't the case atm
+                
+                // TODO: Figure out how to get actionResult from
                 var actionDescName = currentAd.Name;
-                while (!DetermineNextAction(actionResult, out currentAd, actionDescName))
+                var nextAction = actionResult.NextAction;
+                var actionResultStatus = actionResult.ActionStatus;
+                while (!DetermineNextAction(nextAction, actionResultStatus, out currentAd, actionDescName))
                 {
-                    if (!_scopeManager.TryPopScope(out actionDescName))
+                    nextAction = null;
+                    var t = await _scopeManager.TryPopScope(actionResultStatus);
+                    if (t == null)
                     {
+                        currentAd = null;
                         break;
                     }
+
+                    actionResultStatus = t.ActionStatus;
+                    actionDescName = t.NextAction;
                 }
             }
         }
 
-        private bool DetermineNextAction(ActionResult actionResult, out JProperty currentActionDesc, string adName)
+        private bool DetermineNextAction(string nextAction, ActionStatus actionResultStatus,
+            out JProperty currentActionDesc, string adName)
         {
-            if (actionResult?.NextAction == null)
+            if (nextAction == null)
             {
                 currentActionDesc = _scopeManager.CurrentActionDescriptions.FirstOrDefault(a =>
                     a.Value.SelectToken("$.runAfter").First?.ToObject<JProperty>().Name == adName &&
                     a.Value.SelectToken("$.runAfter.*").Values().Any(
-                        x => x?.Value<string>() == actionResult?.ActionStatus.ToString()));
+                        x => x?.Value<string>() == actionResultStatus.ToString()));
             }
             else
             {
                 currentActionDesc =
-                    _scopeManager.CurrentActionDescriptions.First(a => a.Name == actionResult.NextAction);
+                    _scopeManager.CurrentActionDescriptions.First(a => a.Name == nextAction);
             }
 
             return currentActionDesc != null;
@@ -121,7 +133,7 @@ namespace Parser.FlowParser
         {
             if (actionExecutor == null) return null;
 
-            actionExecutor.InitializeActionExecutor(currentAction.Name ,currentAction.First);
+            actionExecutor.InitializeActionExecutor(currentAction.Name, currentAction.First);
             return await actionExecutor.Execute();
         }
 
