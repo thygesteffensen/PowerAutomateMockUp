@@ -16,7 +16,7 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddSingleton<FlowRunner>();
 
             services.AddSingleton<ActionExecutorFactory>();
-            services.AddSingleton<ScopeDepthManager>();
+            services.AddSingleton<IScopeDepthManager>();
 
             services.AddScoped<IState, State>();
             services.AddScoped<IVariableRetriever>(x => x.GetRequiredService<IState>());
@@ -28,15 +28,19 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddTransient<IFunction, ConcatFunction>();
             services.AddTransient<IFunction, ToLower>();
             services.AddTransient<IFunction, ToUpperFunction>();
+            
             services.AddTransient<IFunction, VariablesFunction>();
             services.AddTransient<IFunction, OutputsFunction>();
             services.AddTransient<IFunction, TriggerOutputsFunctions>();
+            services.AddTransient<IFunction, ItemsFunction>();
+            
             services.AddTransient<IFunction, TrimFunction>();
             services.AddTransient<IFunction, LengthFunction>();
 
             services.AddFlowActionByFlowType<IfActionExecutor>("If");
             services.AddFlowActionByFlowType<ScopeActionExecutor>("Scope");
             services.AddFlowActionByFlowType<TerminateActionExecutor>("Terminate");
+            services.AddFlowActionByFlowType<ForEachActionExecutor>("Foreach");
             
             services.AddLogging();
         }
