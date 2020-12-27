@@ -30,8 +30,7 @@ namespace Parser.FlowParser.ActionExecutors
             Parameters = new ValueContainer(new Dictionary<string, ValueContainer>());
             foreach (var keyValuePar in content.Parameters)
             {
-                // TODO: Here is an use case where the engine could have just returned a Value Container instead!
-                Parameters[keyValuePar.Key] = new ValueContainer(_expressionEngine.Parse(keyValuePar.Value));
+                Parameters[keyValuePar.Key] = _expressionEngine.ParseToValueContainer(keyValuePar.Value);
             }
         }
 
