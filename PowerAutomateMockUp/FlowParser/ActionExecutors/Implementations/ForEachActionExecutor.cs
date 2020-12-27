@@ -20,7 +20,7 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
         public ForEachActionExecutor(
             IState state,
             IScopeDepthManager scopeDepthManager,
-            ILogger<ForEachActionExecutor> logger, 
+            ILogger<ForEachActionExecutor> logger,
             IExpressionEngine expressionEngine)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
@@ -34,16 +34,24 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
         public override Task<ActionResult> Execute()
         {
             _logger.LogInformation("Entered foreach...");
-            
-            var runOn = Json.SelectToken("$..foreach").Value<string>();
-            var temp = _expressionEngine.Parse(runOn);
-            var values = _state.GetOutputs(runOn).GetValue<List<ValueContainer>>();
 
+            var runOn = Json.SelectToken("$..foreach").Value<string>();
+            var values = _expressionEngine.ParseToValueContainer(runOn);
+
+            if (values.Type() != ValueContainer.ValueType.Array)
+                return Task.FromResult(new ActionResult
+                {
+                    // TODO: Figure out what happens when you apply for each on non array values
+                    ActionStatus = ActionStatus.Failed
+                });
+            
+            var valueList = values.GetValue<IEnumerable<ValueContainer>>().ToArray();
+                
             var firstScopeAction = SetupScope();
 
             // TODO: Add scope relevant storage to store stuff like this, which cannot interfere with the state.
-            _state.AddOutputs($"item_{ActionName}", values.First());
-            _items = values.Skip(1).ToList();
+            _state.AddOutputs($"item_{ActionName}", valueList.First());
+            _items = valueList.Skip(1).ToList();
 
             return Task.FromResult(new ActionResult {NextAction = firstScopeAction.Name});
         }
@@ -64,10 +72,11 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
             if (_items.Count > 0)
             {
                 _logger.LogInformation("Continuing foreach.");
-                _items = _items.Skip(1).ToList();
 
                 _state.AddOutputs($"item_{ActionName}", _items.First());
 
+                _items = _items.Skip(1).ToList();
+                
                 var firstScopeAction = SetupScope();
 
                 return Task.FromResult(new ActionResult {NextAction = firstScopeAction.Name});

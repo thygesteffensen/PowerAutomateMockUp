@@ -16,7 +16,7 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddSingleton<FlowRunner>();
 
             services.AddSingleton<ActionExecutorFactory>();
-            services.AddSingleton<IScopeDepthManager>();
+            services.AddSingleton<IScopeDepthManager, ScopeDepthManager>();
 
             services.AddScoped<IState, State>();
             services.AddScoped<IVariableRetriever>(x => x.GetRequiredService<IState>());

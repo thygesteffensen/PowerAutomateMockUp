@@ -68,12 +68,20 @@ namespace Test.ActionTests
 
             var stateMock = new Mock<IState>();
 
-            stateMock.Setup(x => x.GetOutputs("")).Returns(initialList);
-
             var sdmMock = new Mock<IScopeDepthManager>();
 
+            var exprEngMock = new Mock<IExpressionEngine>();
 
-            var forEachActionExecutor = new ForEachActionExecutor(stateMock.Object, sdmMock.Object, loggerMock);
+            exprEngMock.Setup(x =>
+                    x.ParseToValueContainer("@outputs('List_records')?['body/value']"))
+                .Returns(initialList);
+            
+            exprEngMock.Setup(x =>
+                    x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns(initialList);
+
+            var forEachActionExecutor =
+                new ForEachActionExecutor(stateMock.Object, sdmMock.Object, loggerMock, exprEngMock.Object);
             forEachActionExecutor.InitializeActionExecutor("Foreach", JToken.Parse(ForEachAction));
 
             var response = await forEachActionExecutor.Execute();
@@ -82,26 +90,26 @@ namespace Test.ActionTests
 
             stateMock.Verify(x => x.AddOutputs(It.IsAny<string>(), It.IsAny<ValueContainer>()), Times.Exactly(1));
             sdmMock.Verify(x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(),
-                It.Is<ForEachActionExecutor>(actionExecutor => 
+                It.Is<ForEachActionExecutor>(actionExecutor =>
                     actionExecutor.Equals(forEachActionExecutor))), Times.Exactly(1));
 
             var exitAnswer1 = await forEachActionExecutor.ExitScope(ActionStatus.Succeeded);
             Assert.AreEqual("Update_a_record", exitAnswer1.NextAction);
 
             stateMock.Verify(x => x.AddOutputs(It.IsAny<string>(), It.IsAny<ValueContainer>()), Times.Exactly(2));
-
-            var exitAnswer2 = await forEachActionExecutor.ExitScope(ActionStatus.Succeeded);
             sdmMock.Verify(x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(),
-                It.Is<ForEachActionExecutor>(actionExecutor => 
+                It.Is<ForEachActionExecutor>(actionExecutor =>
                     actionExecutor.Equals(forEachActionExecutor))), Times.Exactly(2));
             
+            var exitAnswer2 = await forEachActionExecutor.ExitScope(ActionStatus.Succeeded);
+
             Assert.AreEqual("Update_a_record", exitAnswer2.NextAction);
 
             stateMock.Verify(x => x.AddOutputs(It.IsAny<string>(), It.IsAny<ValueContainer>()), Times.Exactly(3));
             sdmMock.Verify(x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(),
-                It.Is<ForEachActionExecutor>(actionExecutor => 
+                It.Is<ForEachActionExecutor>(actionExecutor =>
                     actionExecutor.Equals(forEachActionExecutor))), Times.Exactly(3));
-            
+
             var exitAnswer3 = await forEachActionExecutor.ExitScope(ActionStatus.Succeeded);
             Assert.AreEqual(null, exitAnswer3.NextAction);
         }

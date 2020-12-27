@@ -3,6 +3,7 @@
     public interface IExpressionEngine
     {
         string Parse(string input);
+        ValueContainer ParseToValueContainer(string input);
     }
 
     public class ExpressionEngine : IExpressionEngine
@@ -16,7 +17,12 @@
 
         public string Parse(string input)
         {
-            return _expressionGrammar.Evaluate(input);
+            return _expressionGrammar.EvaluateToString(input);
+        }
+
+        public ValueContainer ParseToValueContainer(string input)
+        {
+            return _expressionGrammar.EvaluateToValueContainer(input);
         }
     }
 }
