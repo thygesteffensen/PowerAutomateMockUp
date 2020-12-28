@@ -37,6 +37,9 @@
         <None Update="FlowSamples\Pure CDS ce.json">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="FlowSamples\PAMUApplyToEach.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

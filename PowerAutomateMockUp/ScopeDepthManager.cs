@@ -5,20 +5,19 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Parser.FlowParser.ActionExecutors;
-using Parser.FlowParser.ActionExecutors.Implementations;
 
 namespace Parser
 {
-    public class ScopeDepthManager
+    public class ScopeDepthManager : IScopeDepthManager
     {
-        private readonly ILogger<ScopeDepthManager> _logger;
+        private readonly ILogger<IScopeDepthManager> _logger;
         public IEnumerable<JProperty> CurrentActionDescriptions { get; private set; }
 
         private readonly Stack<string> _scopes;
         private readonly Stack<IScopeActionExecutor> _scopeActionExecutors;
         private readonly Stack<IEnumerable<JProperty>> _actionDescriptions;
 
-        public ScopeDepthManager(ILogger<ScopeDepthManager> logger)
+        public ScopeDepthManager(ILogger<IScopeDepthManager> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _actionDescriptions = new Stack<IEnumerable<JProperty>>();

@@ -5,7 +5,6 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Parser;
 using Parser.FlowParser.ActionExecutors;
-using Parser.FlowParser.ActionExecutors.Implementations;
 
 namespace Test.ActionTests
 {
@@ -15,7 +14,7 @@ namespace Test.ActionTests
         [Test]
         public async Task TestBasicScopeUseCase()
         {
-            var logger = TestLogger.Create<ScopeDepthManager>();
+            var logger = TestLogger.Create<IScopeDepthManager>();
 
             var scopeDepthManager = new ScopeDepthManager(logger);
             scopeDepthManager.Push("rootScope", new List<JProperty>(), null);

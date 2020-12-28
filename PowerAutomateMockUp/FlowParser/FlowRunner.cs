@@ -15,13 +15,13 @@ namespace Parser.FlowParser
     {
         private readonly IState _state;
         private readonly FlowSettings _flowRunnerSettings;
-        private readonly ScopeDepthManager _scopeManager;
+        private readonly IScopeDepthManager _scopeManager;
         private readonly ActionExecutorFactory _actionExecutorFactory;
         private JProperty _trigger;
 
         public FlowRunner(
             IState state,
-            ScopeDepthManager scopeDepthManager,
+            IScopeDepthManager scopeDepthManager,
             IOptions<FlowSettings> flowRunnerSettings,
             ActionExecutorFactory actionExecutorFactory)
         {

@@ -7,7 +7,7 @@ using Parser;
 using Parser.ExpressionParser;
 using Parser.ExpressionParser.Functions.Base;
 using Parser.ExpressionParser.Functions.CustomException;
-using Parser.FlowParser;
+
 
 namespace Test
 {
@@ -146,7 +146,7 @@ namespace Test
                     })
                 }
             },
-            /*new TestInput("@triggerOutputs()?['body/entrytype']", null)
+            new TestInput("@triggerOutputs()?['body/entrytype']", null)
             {
                 ValueContainers = new[]
                 {
@@ -183,7 +183,7 @@ namespace Test
                         }
                     })
                 }
-            }*/
+            }
         };
 
         #endregion
@@ -256,6 +256,57 @@ namespace Test
             }
         };
 
+        [TestCaseSource(nameof(_testStorageValueContainer))]
+        public void TestInternalsFlowStorageValueContainer(TestInput input)
+        {
+            var sp = BuildServiceProvider();
+            var engine = sp.GetRequiredService<IExpressionEngine>();
+            var state = sp.GetRequiredService<IState>();
+
+            AddValuesToState(input.VariableKey, input.ValueContainers, input.StorageOption, state);
+
+            var result = engine.ParseToValueContainer(input.Input);
+
+            Assert.AreEqual(input.ExpectedOutputType, result.Type());
+        }
+
+        private static TestInput[] _testStorageValueContainer =
+        {
+            new TestInput(
+                "@variables(\'array\')",
+                ValueContainer.ValueType.Array)
+            {
+                VariableKey = "array",
+                ValueContainers = new[] {new ValueContainer("Thyge"), new ValueContainer("Poul")},
+                StorageOption = StorageOption.Variables
+            },
+            new TestInput(
+                "@toLower(variables(\'name\'))",
+                ValueContainer.ValueType.String)
+            {
+                VariableKey = "name",
+                ValueContainers = new[] {new ValueContainer("Alice Bob")},
+                StorageOption = StorageOption.Variables
+            },
+            new TestInput(
+                "@outputs('Compose_name')",
+                ValueContainer.ValueType.String)
+            {
+                VariableKey = "Compose_name",
+                ValueContainers = new[] {new ValueContainer("Alice Bob")},
+                StorageOption = StorageOption.Outputs
+            },
+            new TestInput
+            (
+                "@variables(\'dictionary\')?[0]?[\'firstChildValue\'][\'secondChildValue\']",
+                ValueContainer.ValueType.String)
+            {
+                VariableKey = "dictionary",
+                ValueContainers = BigValue,
+                StorageOption = StorageOption.Variables
+            }
+        };
+
         public class TestInput
         {
             public TestInput(string input, string expectedOutput)
@@ -264,10 +315,17 @@ namespace Test
                 ExpectedOutput = expectedOutput;
             }
 
+            public TestInput(string input, ValueContainer.ValueType expectedOutputType)
+            {
+                Input = input;
+                ExpectedOutputType = expectedOutputType;
+            }
+
             public string VariableKey { get; set; }
             public ValueContainer[] ValueContainers { get; set; }
             public string Input { get; set; }
             public string ExpectedOutput { get; set; }
+            public ValueContainer.ValueType ExpectedOutputType { get; set; }
             public StorageOption StorageOption { get; set; }
 
             public Type ExceptionType { get; set; }

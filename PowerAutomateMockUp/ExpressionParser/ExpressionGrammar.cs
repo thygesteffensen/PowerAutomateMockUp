@@ -9,7 +9,7 @@ namespace Parser.ExpressionParser
     public class ExpressionGrammar
     {
         private readonly Parser<IRule> _method;
-        private readonly Parser<string> _input;
+        private readonly Parser<ValueContainer> _input;
 
         public ExpressionGrammar(IEnumerable<IFunction> functions)
         {
@@ -95,43 +95,48 @@ namespace Parser.ExpressionParser
                     select (IRule) new AccessValueRule(func, indexes));
             // .Or(simpleStringRule);
 
-            Parser<string> enclosedExpression =
+            Parser<ValueContainer> enclosedExpression =
                 _method.Contained(
                         Parse.String("@{"),
                         Parse.Char('}'))
-                    .Select(x => x.Evaluate().GetValue<string>());
+                    .Select(x => x.Evaluate());
 
-            Parser<string> expression =
+            Parser<ValueContainer> expression =
                 from at in Parse.Char('@')
                 from method in _method
-                select method.Evaluate().GetValue<string>();
+                select method.Evaluate();
 
 
             Parser<string> allowedString =
                 from t in simpleString.Or(allowedCharacters).Many()
                 select string.Concat(t);
 
-            Parser<string> joinedString =
+            Parser<ValueContainer> joinedString =
                 from e in (
                         from preFix in allowedString
                         from exp in enclosedExpression.Optional()
                         select exp.IsEmpty ? preFix : preFix + exp.Get())
                     .Many()
-                select string.Concat(e);
+                select new ValueContainer(string.Concat(e));
 
-            Parser<string> charPrefixedString =
+            Parser<ValueContainer> charPrefixedString =
                 from at in Parse.Char('@')
                 from str in Parse.LetterOrDigit.Many().Text().Except(Parse.Chars('{', '@'))
-                select str;
+                select new ValueContainer(str);
 
             _input = expression.Or(charPrefixedString).Or(joinedString);
         }
 
-        public string Evaluate(string input)
+        public string EvaluateToString(string input)
         {
             var output = _input.Parse(input);
 
-            return output;
+            return output.GetValue<string>();
+        }
+        
+        public ValueContainer EvaluateToValueContainer(string input)
+        {
+            return _input.Parse(input);
         }
     }
 }

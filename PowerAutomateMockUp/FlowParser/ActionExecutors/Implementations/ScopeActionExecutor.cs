@@ -7,9 +7,9 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 {
     public class ScopeActionExecutor : DefaultBaseActionExecutor
     {
-        private readonly ScopeDepthManager _scopeDepthManager;
+        private readonly IScopeDepthManager _scopeDepthManager;
 
-        public ScopeActionExecutor(ScopeDepthManager scopeDepthManager)
+        public ScopeActionExecutor(IScopeDepthManager scopeDepthManager)
         {
             _scopeDepthManager = scopeDepthManager ?? throw new ArgumentNullException(nameof(scopeDepthManager));
         }
@@ -25,10 +25,5 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
             return Task.FromResult(new ActionResult {NextAction = firstScopeAction.Name});
         }
-    }
-
-    public interface IScopeActionExecutor
-    {
-        public Task<ActionResult> ExitScope(ActionStatus scopeStatus);
     }
 }
