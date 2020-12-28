@@ -63,6 +63,12 @@ namespace Parser.ExpressionParser
             _type = ValueType.Float;
         }
 
+        public ValueContainer(double floatValue)
+        {
+            _value = floatValue;
+            _type = ValueType.Float;
+        }
+
         public ValueContainer(int intValue)
         {
             _value = intValue;
@@ -211,12 +217,13 @@ namespace Parser.ExpressionParser
             {
                 return GetValue<Dictionary<string, ValueContainer>>();
             }
+
             throw new PowerAutomateMockUpException("Can't get none object value container as dict.");
         }
 
         private ValueContainer JsonToValueContainer(JToken json)
         {
-            if (json.GetType() == typeof(JObject))
+            if (json is JObject jObject)
             {
                 var dictionary = json.ToDictionary(pair => ((JProperty) pair).Name, token =>
                 {
@@ -236,7 +243,47 @@ namespace Parser.ExpressionParser
                 return new ValueContainer(dictionary);
             }
 
+            if (json is JArray jArray)
+            {
+                return jArray.Count > 0 ? new ValueContainer() : JArrayToValueContainer(jArray);
+            }
+
             throw new Exception();
+        }
+
+        private ValueContainer JArrayToValueContainer(JArray json)
+        {
+            var list = new List<ValueContainer>();
+            
+            foreach (var jToken in json)
+            {
+                if (jToken.GetType() != typeof(JValue))
+                {
+                    throw new PowerAutomateMockUpException("Json can only contain arrays of primitive types.");
+                }
+
+                var t = (JValue) jToken;
+                switch (t.Value)
+                {
+                    case int i:
+                        list.Add(new ValueContainer(i));
+                        break;
+                    case string s:
+                        list.Add(new ValueContainer(s));
+                        break;
+                    case bool b:
+                        list.Add(new ValueContainer(b));
+                        break;
+                    case double d:
+                        list.Add(new ValueContainer(d));
+                        break;
+                    default:
+                        throw new PowerAutomateMockUpException(
+                            $"Type {t.Value.GetType()} is not recognized when converting Json to ValueContainer.");
+                }
+            }
+
+            return new ValueContainer(list);
         }
 
 
