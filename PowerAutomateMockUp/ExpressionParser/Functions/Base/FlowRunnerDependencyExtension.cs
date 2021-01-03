@@ -41,6 +41,7 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddFlowActionByFlowType<ScopeActionExecutor>("Scope");
             services.AddFlowActionByFlowType<TerminateActionExecutor>("Terminate");
             services.AddFlowActionByFlowType<ForEachActionExecutor>("Foreach");
+            services.AddFlowActionByFlowType<SwitchActionExecutor>("Switch");
             
             services.AddLogging();
         }
