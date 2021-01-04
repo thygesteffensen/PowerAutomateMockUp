@@ -36,11 +36,13 @@ namespace Parser.ExpressionParser.Functions.Base
             
             services.AddTransient<IFunction, TrimFunction>();
             services.AddTransient<IFunction, LengthFunction>();
+            services.AddTransient<IFunction, GreaterFunction>();
 
             services.AddFlowActionByFlowType<IfActionExecutor>("If");
             services.AddFlowActionByFlowType<ScopeActionExecutor>("Scope");
             services.AddFlowActionByFlowType<TerminateActionExecutor>("Terminate");
             services.AddFlowActionByFlowType<ForEachActionExecutor>("Foreach");
+            services.AddFlowActionByFlowType<DoUntilActionExecutor>("Until");
             services.AddFlowActionByFlowType<SwitchActionExecutor>("Switch");
             
             services.AddLogging();
