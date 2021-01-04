@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Parser.ExpressionParser
 {
     [JsonConverter(typeof(ValueContainerConverter))]
-    public class ValueContainer
+    public class ValueContainer : IComparable, IEquatable<ValueContainer>
     {
         private readonly dynamic _value;
         private readonly ValueType _type;
@@ -254,7 +254,7 @@ namespace Parser.ExpressionParser
         private ValueContainer JArrayToValueContainer(JArray json)
         {
             var list = new List<ValueContainer>();
-            
+
             foreach (var jToken in json)
             {
                 if (jToken.GetType() != typeof(JValue))
@@ -311,6 +311,61 @@ namespace Parser.ExpressionParser
         {
             return _type == ValueType.Null;
         }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj == null || obj.GetType() != GetType()) throw new InvalidOperationException("Cannot compare these two...");
+
+            var other = (ValueContainer) obj;
+            if (other.Type() != _type)
+            {
+                // TODO: Fix comparison
+
+                throw new InvalidOperationException("Cannot compare two different ValueContainers");
+            }
+            else
+            {
+                switch (_value)
+                {
+                    case bool b:
+                        return b.CompareTo(other._value);
+                    case int i:
+                        return i.CompareTo(other._value);
+                    case float f:
+                        return f.CompareTo(other._value);
+                    case string s:
+                        return s.CompareTo(other._value);
+                    case Dictionary<string, ValueContainer> d:
+                        var d2 = (Dictionary<string, ValueContainer>) other._value;
+                        return d.Count - d2.Count;
+                    case IEnumerable<ValueContainer> l:
+                        var l2 = (IEnumerable<ValueContainer>) other._value;
+                        return l.Count() - l2.Count();
+                    default:
+                        return -1;
+                }
+            }
+        }
+
+        public bool Equals(ValueContainer other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Equals(_value, other._value) && _type == other._type;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((ValueContainer) obj);
+        }
+
+        /*public override int GetHashCode()
+        {
+            return HashCode.Combine(_value, (int) _type);
+        }*/
     }
 
     static class ValueContainerExtensions
