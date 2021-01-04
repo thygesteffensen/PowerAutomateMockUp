@@ -304,6 +304,15 @@ namespace Test
                 VariableKey = "dictionary",
                 ValueContainers = BigValue,
                 StorageOption = StorageOption.Variables
+            },
+            new TestInput
+            (
+                "@greater(variables('Variable'), 10)",
+                ValueContainer.ValueType.Boolean)
+            {
+                VariableKey = "Variable",
+                ValueContainers = new[] {new ValueContainer(11)},
+                StorageOption = StorageOption.Variables
             }
         };
 
