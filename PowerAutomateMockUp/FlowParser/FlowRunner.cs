@@ -43,21 +43,17 @@ namespace Parser.FlowParser
             _scopeManager.Push("root", flowDefinition.SelectToken("$.actions").OfType<JProperty>(), null);
         }
 
-        public async Task<object> Trigger(ValueContainer triggerOutputs)
-        {
-            _state.AddTriggerOutputs(triggerOutputs);
-            // TODO: A option to handle action while execution
-            await RunFlow();
-
-            return null;
-        }
-
         public async Task Trigger()
         {
             var trigger = GetActionExecutor(_trigger);
 
             trigger.InitializeActionExecutor(_trigger.Name, _trigger.Value);
-            await trigger.Execute();
+            var triggerResult = await trigger.Execute();
+
+            if (triggerResult.ActionOutput != null)
+            {
+                _state.AddTriggerOutputs(triggerResult.ActionOutput);
+            }
 
             await RunFlow();
         }
@@ -88,8 +84,7 @@ namespace Parser.FlowParser
 
                 // If an action failes inside a scope, and a suitable action isn't found inside the given scope, that 
                 // actions status is transferred to be the scope status. This isn't the case atm
-                
-                // TODO: Figure out how to get actionResult from
+
                 var actionDescName = currentAd.Name;
                 var nextAction = actionResult.NextAction;
                 var actionResultStatus = actionResult.ActionStatus;
@@ -128,13 +123,20 @@ namespace Parser.FlowParser
             return currentActionDesc != null;
         }
 
-        private static async Task<ActionResult> ExecuteAction(ActionExecutorBase actionExecutor,
+        private async Task<ActionResult> ExecuteAction(ActionExecutorBase actionExecutor,
             JProperty currentAction)
         {
             if (actionExecutor == null) return null;
 
             actionExecutor.InitializeActionExecutor(currentAction.Name, currentAction.First);
-            return await actionExecutor.Execute();
+            var executionResult = await actionExecutor.Execute();
+
+            if (executionResult.ActionOutput != null)
+            {
+                _state.AddOutputs(actionExecutor.ActionName, executionResult.ActionOutput);
+            }
+
+            return executionResult;
         }
 
         private ActionExecutorBase GetActionExecutor(JProperty currentAction)
