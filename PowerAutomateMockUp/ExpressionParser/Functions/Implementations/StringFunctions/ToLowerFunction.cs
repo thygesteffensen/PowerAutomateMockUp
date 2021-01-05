@@ -1,11 +1,11 @@
 ﻿using Parser.ExpressionParser.Functions.Base;
 using Parser.ExpressionParser.Functions.CustomException;
 
-namespace Parser.ExpressionParser.Functions.Implementations
+namespace Parser.ExpressionParser.Functions.Implementations.StringFunctions
 {
-    public class TrimFunction : Function
+    public class ToLowerFunction : Function
     {
-        public TrimFunction() : base("trim")
+        public ToLowerFunction() : base("toLower")
         {
         }
 
@@ -16,7 +16,7 @@ namespace Parser.ExpressionParser.Functions.Implementations
                 throw new ArgumentError(parameters.Length > 1 ? "Too many arguments" : "Too few arguments");
             }
 
-            return new ValueContainer(parameters[0].GetValue<string>().Trim());
+            return new ValueContainer(AuxiliaryMethods.VcIsString(parameters[0]).ToLower());
         }
     }
 }
