@@ -11,7 +11,7 @@ namespace Parser.ExpressionParser.Rules
         private readonly IEnumerable<IRule> _args;
         public string FunctionName { get; }
 
-        // public Expression(IEnumerable<IFunction> functions, string functionName, params IRule[] args)
+        
         public ExpressionRule(IEnumerable<IFunction> functions, string functionName, IEnumerable<IRule> args)
         {
             _function = functions.ToList().Find(x => x.FunctionName == functionName);
