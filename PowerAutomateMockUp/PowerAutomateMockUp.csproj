@@ -28,7 +28,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="ExpressionParser\Functions\Implementations\CollectionFunctions" />
       <Folder Include="ExpressionParser\Functions\Implementations\ConversionFunctions" />
       <Folder Include="ExpressionParser\Functions\Implementations\LogicalComparisonFunctions" />
     </ItemGroup>
