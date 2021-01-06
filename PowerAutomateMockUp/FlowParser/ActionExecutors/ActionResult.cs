@@ -1,4 +1,6 @@
-﻿namespace Parser.FlowParser.ActionExecutors
+﻿using Parser.ExpressionParser;
+
+namespace Parser.FlowParser.ActionExecutors
 {
     /// <summary>
     /// An ActionResult contains updated/retrieved variables, as well as
@@ -17,7 +19,18 @@
         /// </summary>
         public ActionStatus ActionStatus { get; set; } = ActionStatus.Succeeded;
 
+        /// <summary>
+        /// If for some reason you want to stop the execution, this can
+        /// be set to false
+        /// </summary>
         public bool ContinueExecution { get; set; } = true;
+        
+        /// <summary>
+        /// When and if an action is done and the output have been produced,
+        /// the output is returned to the flow runner using the ActionResult object and
+        /// the output is added correctly to the state.
+        /// </summary>
+        public ValueContainer ActionOutput { get; set; }
     }
 
     public enum ActionStatus
