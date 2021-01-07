@@ -301,7 +301,7 @@ namespace Parser.ExpressionParser
                 ValueType.String => _value,
                 ValueType.Object => "{" + string.Join(",", GetValue<Dictionary<string, ValueContainer>>()
                     .Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}",
-                ValueType.Array => "[" + string.Join(", ", GetValue<ValueContainer[]>().ToList()) + "]",
+                ValueType.Array => "[" + string.Join(", ", GetValue<IEnumerable<ValueContainer>>().ToList()) + "]",
                 ValueType.Null => "<null>",
                 _ => throw new ArgumentOutOfRangeException()
             };
@@ -314,7 +314,8 @@ namespace Parser.ExpressionParser
 
         public int CompareTo(object? obj)
         {
-            if (obj == null || obj.GetType() != GetType()) throw new InvalidOperationException("Cannot compare these two...");
+            if (obj == null || obj.GetType() != GetType())
+                throw new InvalidOperationException("Cannot compare these two...");
 
             var other = (ValueContainer) obj;
             if (other.Type() != _type)
@@ -351,21 +352,57 @@ namespace Parser.ExpressionParser
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(_value, other._value) && _type == other._type;
+
+            switch (_type)
+            {
+                case ValueType.Array when other._type == ValueType.Array:
+                {
+                    var thisArray = (IEnumerable<ValueContainer>) _value;
+                    var otherArray = other.GetValue<IEnumerable<ValueContainer>>();
+
+                    return thisArray.SequenceEqual(otherArray);
+                }
+                case ValueType.Object when other._type == ValueType.Object:
+                {
+                    var thisDict = (Dictionary<string, ValueContainer>) _value;
+                    var otherDict = other.GetValue<Dictionary<string, ValueContainer>>();
+
+                    return thisDict.Count == otherDict.Count && !thisDict.Except(otherDict).Any();
+                }
+                default:
+                    return Equals(_value, other._value) && _type == other._type;
+            }
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((ValueContainer) obj);
+            return obj.GetType() == GetType() && Equals((ValueContainer) obj);
         }
 
-        /*public override int GetHashCode()
+        public override int GetHashCode()
         {
-            return HashCode.Combine(_value, (int) _type);
-        }*/
+            return new {_type, _value}.GetHashCode();
+        }
+    }
+
+    public class ValueContainerComparer : EqualityComparer<ValueContainer>
+    {
+        public override bool Equals(ValueContainer x, ValueContainer y)
+        {
+            if (x == null || y == null)
+            {
+                return x == null && y == null;
+            }
+
+            return x.Equals(y);
+        }
+
+        public override int GetHashCode(ValueContainer obj)
+        {
+            return obj.GetHashCode();
+        }
     }
 
     static class ValueContainerExtensions
