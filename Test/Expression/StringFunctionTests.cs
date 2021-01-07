@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using Parser.ExpressionParser;
-using Parser.ExpressionParser.Functions.Base;
 using Parser.ExpressionParser.Functions.Implementations.StringFunctions;
 
 namespace Test.Expression
@@ -8,18 +7,7 @@ namespace Test.Expression
     [TestFixture]
     public class StringFunctionTests
     {
-        [TestCaseSource(nameof(_stringFunctionTestInput))]
-        public void TestStringFunctions(Function func, string name, ValueContainer[] parameters,
-            ValueContainer expected)
-        {
-            Assert.AreEqual(name, func.FunctionName);
-
-            var result = func.ExecuteFunction(parameters);
-
-            Assert.AreEqual(expected, result);
-        }
-
-        private static object[] _stringFunctionTestInput =
+        internal static object[] StringFunctionTestInput =
         {
             new object[]
             {

@@ -62,7 +62,7 @@ namespace Test.ActionTests
             var expressionEngine = new Mock<IExpressionEngine>();
 
             expressionEngine.Setup(x => x.Parse(It.IsAny<string>())).Returns("CaseWithoutActions");
-            
+
             var switchActionExecutor = new SwitchActionExecutor(sdm.Object, logger, expressionEngine.Object);
             switchActionExecutor.InitializeActionExecutor("ActionName", JToken.Parse(SwitchAction));
 
@@ -72,12 +72,14 @@ namespace Test.ActionTests
             Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
 
             sdm.Verify(
-                x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(), It.IsAny<IScopeActionExecutor>()),
+                x => x.Push(It.IsAny<string>(), 
+                    It.IsAny<IEnumerable<JProperty>>()
+                    , It.IsAny<IScopeActionExecutor>()),
                 Times.Never);
-            
-            expressionEngine.Verify(x=> x.Parse(It.IsAny<string>()), Times.Once);
+
+            expressionEngine.Verify(x => x.Parse(It.IsAny<string>()), Times.Once);
         }
-        
+
         [Test]
         public async Task SwitchTestWithActions()
         {
@@ -88,20 +90,20 @@ namespace Test.ActionTests
             var expressionEngine = new Mock<IExpressionEngine>();
 
             expressionEngine.Setup(x => x.Parse(It.IsAny<string>())).Returns("CaseWithActions");
-            
+
             var switchActionExecutor = new SwitchActionExecutor(sdm.Object, logger, expressionEngine.Object);
             switchActionExecutor.InitializeActionExecutor("ActionName", JToken.Parse(SwitchAction));
 
             var result = await switchActionExecutor.Execute();
 
-            Assert.AreEqual("Update_a_record",result.NextAction);
+            Assert.AreEqual("Update_a_record", result.NextAction);
             Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
 
             sdm.Verify(
                 x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(), It.IsAny<IScopeActionExecutor>()),
                 Times.Once);
-            
-            expressionEngine.Verify(x=> x.Parse(It.IsAny<string>()), Times.Once);
+
+            expressionEngine.Verify(x => x.Parse(It.IsAny<string>()), Times.Once);
         }
     }
 }
