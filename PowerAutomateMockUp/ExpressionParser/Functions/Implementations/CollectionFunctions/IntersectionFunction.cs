@@ -25,15 +25,7 @@ namespace Parser.ExpressionParser.Functions.Implementations.CollectionFunctions
         {
             var first = parameters[0].GetValue<Dictionary<string, ValueContainer>>();
 
-            var intersect =
-                ToDictionary(first, parameters[1]);
-
-            if (parameters.Count > 2)
-            {
-                intersect = parameters.Skip(2).Aggregate(intersect, ToDictionary);
-            }
-
-            return new ValueContainer(intersect);
+            return new ValueContainer(parameters.Skip(1).Aggregate(first, ToDictionary));
         }
 
         private Dictionary<string, ValueContainer> ToDictionary(Dictionary<string, ValueContainer> first,
@@ -48,16 +40,10 @@ namespace Parser.ExpressionParser.Functions.Implementations.CollectionFunctions
         private ValueContainer IntersectList(IReadOnlyList<ValueContainer> parameters)
         {
             var first = parameters[0].GetValue<IEnumerable<ValueContainer>>();
-            var second = parameters[1].GetValue<IEnumerable<ValueContainer>>();
 
-            var intersection = first.Intersect(second, new ValueContainerComparer());
-
-            if (parameters.Count > 2)
-            {
-                intersection = parameters.Skip(2)
-                    .Select(valueContainer => valueContainer.GetValue<IEnumerable<ValueContainer>>())
-                    .Aggregate(intersection, (current, collection) => current.Intersect(collection));
-            }
+            var intersection = parameters.Skip(1)
+                .Select(valueContainer => valueContainer.GetValue<IEnumerable<ValueContainer>>())
+                .Aggregate(first, (current, collection) => current.Intersect(collection));
 
             return new ValueContainer(intersection);
         }
