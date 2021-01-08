@@ -98,7 +98,7 @@ namespace Test.Expression
                 },
                 new ValueContainer(true)
             },
-            
+
             new object[]
             {
                 new EmptyFunction(),
@@ -115,7 +115,7 @@ namespace Test.Expression
                 "empty",
                 new[]
                 {
-                    new ValueContainer(new []{new ValueContainer("Item")})
+                    new ValueContainer(new[] {new ValueContainer("Item")})
                 },
                 new ValueContainer(false)
             },
@@ -155,7 +155,7 @@ namespace Test.Expression
                 "first",
                 new[]
                 {
-                    new ValueContainer(new []{new ValueContainer("first"), new ValueContainer("second")})
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")})
                 },
                 new ValueContainer("first")
             },
@@ -165,12 +165,143 @@ namespace Test.Expression
                 "intersection",
                 new[]
                 {
-                    new ValueContainer(new []{new ValueContainer("first"), new ValueContainer("second")}),
-                    new ValueContainer(new []{new ValueContainer("second"), new ValueContainer("third")}),
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")}),
+                    new ValueContainer(new[] {new ValueContainer("second"), new ValueContainer("third")}),
                 },
-                new ValueContainer(new []{new ValueContainer("second")})
+                new ValueContainer(new[] {new ValueContainer("second")})
+            },
+            new object[]
+            {
+                new JoinFunction(),
+                "join",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")}),
+                    new ValueContainer("."),
+                },
+                new ValueContainer("first.second")
+            },
+            new object[]
+            {
+                new JoinFunction(),
+                "join",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer(1), new ValueContainer(2), new ValueContainer(3)}),
+                    new ValueContainer(","),
+                },
+                new ValueContainer("1,2,3")
+            },
+            new object[]
+            {
+                new JoinFunction(),
+                "join",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer(1)}),
+                    new ValueContainer(","),
+                },
+                new ValueContainer("1")
+            },
+            new object[]
+            {
+                new LastFunction(),
+                "last",
+                new[]
+                {
+                    new ValueContainer("1234")
+                },
+                new ValueContainer("4")
+            },
+            new object[]
+            {
+                new LastFunction(),
+                "last",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")})
+                },
+                new ValueContainer("second")
+            },
+            new object[]
+            {
+                new LengthFunction(),
+                "length",
+                new[]
+                {
+                    new ValueContainer("1234")
+                },
+                new ValueContainer(4)
+            },
+            new object[]
+            {
+                new LengthFunction(),
+                "length",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")})
+                },
+                new ValueContainer(2)
+            },
+            new object[]
+            {
+                new SkipFunction(),
+                "skip",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")}),
+                    new ValueContainer(1)
+                },
+                new ValueContainer(new[] {new ValueContainer("second")})
+            },
+            new object[]
+            {
+                new TakeFunction(),
+                "take",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")}),
+                    new ValueContainer(1)
+                },
+                new ValueContainer(new[] {new ValueContainer("first")})
+            },
+            new object[]
+            {
+                new UnionFunction(),
+                "union",
+                new[]
+                {
+                    new ValueContainer(new[] {new ValueContainer("first"), new ValueContainer("second")}),
+                    new ValueContainer(new[] {new ValueContainer("second"), new ValueContainer("third")}),
+                },
+                new ValueContainer(new[]
+                    {new ValueContainer("first"), new ValueContainer("second"), new ValueContainer("third")})
+            },
+
+            new object[]
+            {
+                new UnionFunction(),
+                "union",
+                new[]
+                {
+                    new ValueContainer(new Dictionary<string, ValueContainer>
+                    {
+                        {"key1", new ValueContainer("value1")},
+                        {"key2", new ValueContainer("value2")}
+                    }),
+                    new ValueContainer(new Dictionary<string, ValueContainer>
+                    {
+                        {"key2", new ValueContainer("joker")},
+                        {"key3", new ValueContainer("value3")}
+                    })
+                },
+                new ValueContainer(new Dictionary<string, ValueContainer>
+                {
+                    {"key1", new ValueContainer("value1")},
+                    {"key2", new ValueContainer("joker")},
+                    {"key3", new ValueContainer("value3")}
+                })
             },
         };
     }
-    
 }
