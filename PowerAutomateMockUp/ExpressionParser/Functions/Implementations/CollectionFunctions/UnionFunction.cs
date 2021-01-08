@@ -4,9 +4,9 @@ using Parser.ExpressionParser.Functions.Base;
 
 namespace Parser.ExpressionParser.Functions.Implementations.CollectionFunctions
 {
-    public class InterSectionFunction : Function
+    public class UnionFunction : Function
     {
-        public InterSectionFunction() : base("intersection")
+        public UnionFunction() : base("union")
         {
         }
 
@@ -14,14 +14,14 @@ namespace Parser.ExpressionParser.Functions.Implementations.CollectionFunctions
         {
             return parameters[0].Type() switch
             {
-                ValueContainer.ValueType.Array => IntersectList(parameters),
-                ValueContainer.ValueType.Object => IntersectDict(parameters),
+                ValueContainer.ValueType.Array => UnionList(parameters),
+                ValueContainer.ValueType.Object => UnionDict(parameters),
                 _ => throw new PowerAutomateMockUpException(
-                    $"Can only intersect Array and Object, not {parameters[0].Type()}.")
+                    $"Can only union Array and Object, not {parameters[0].Type()}.")
             };
         }
 
-        private ValueContainer IntersectDict(IReadOnlyList<ValueContainer> parameters)
+        private ValueContainer UnionDict(IReadOnlyList<ValueContainer> parameters)
         {
             var first = parameters[0].GetValue<Dictionary<string, ValueContainer>>();
 
@@ -33,17 +33,21 @@ namespace Parser.ExpressionParser.Functions.Implementations.CollectionFunctions
         {
             var second = valueContainer.GetValue<Dictionary<string, ValueContainer>>();
 
-            return first.Where(x => second.ContainsKey(x.Key))
-                .ToDictionary(x => x.Key, x => second[x.Key]);
+            foreach (var kv in second.ToList())
+            {
+                first[kv.Key] = kv.Value;
+            }
+
+            return first;
         }
 
-        private ValueContainer IntersectList(IReadOnlyList<ValueContainer> parameters)
+        private ValueContainer UnionList(IReadOnlyList<ValueContainer> parameters)
         {
             var first = parameters[0].GetValue<IEnumerable<ValueContainer>>();
 
             var intersection = parameters.Skip(1)
                 .Select(valueContainer => valueContainer.GetValue<IEnumerable<ValueContainer>>())
-                .Aggregate(first, (current, collection) => current.Intersect(collection));
+                .Aggregate(first, (current, collection) => current.Union(collection));
 
             return new ValueContainer(intersection);
         }
