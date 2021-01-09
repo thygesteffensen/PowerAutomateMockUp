@@ -15,6 +15,7 @@ namespace Test
             Assert.AreEqual(true, new ValueContainer("2").Equals(new ValueContainer("2")));
             Assert.AreEqual(true, new ValueContainer(true).Equals(new ValueContainer(true)));
             Assert.AreEqual(true, new ValueContainer(2.1).Equals(new ValueContainer(2.1)));
+            Assert.AreEqual(true, new ValueContainer(2.1f).Equals(new ValueContainer(2.1f)));
             Assert.AreEqual(true,
                 new ValueContainer(new ValueContainer[] { }).Equals(new ValueContainer(new ValueContainer[] { })));
             Assert.AreEqual(true,
@@ -37,6 +38,7 @@ namespace Test
             Assert.AreEqual(false, new ValueContainer("321").Equals(new ValueContainer("123")));
             Assert.AreEqual(false, new ValueContainer(1).Equals(new ValueContainer(2)));
             Assert.AreEqual(false, new ValueContainer(1.2).Equals(new ValueContainer(2.1)));
+            Assert.AreEqual(false, new ValueContainer(1.2f).Equals(new ValueContainer(2.1f)));
             Assert.AreEqual(false, new ValueContainer(false).Equals(new ValueContainer(true)));
             Assert.AreEqual(false,
                 new ValueContainer(new[] {new ValueContainer("")}).Equals(new ValueContainer(new ValueContainer[]
