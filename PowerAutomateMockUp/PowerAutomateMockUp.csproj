@@ -29,7 +29,6 @@
 
     <ItemGroup>
       <Folder Include="ExpressionParser\Functions\Implementations\ConversionFunctions" />
-      <Folder Include="ExpressionParser\Functions\Implementations\LogicalComparisonFunctions" />
     </ItemGroup>
     
 </Project>

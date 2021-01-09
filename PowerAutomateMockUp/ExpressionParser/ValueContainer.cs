@@ -334,6 +334,10 @@ namespace Parser.ExpressionParser
                         return i.CompareTo(other._value);
                     case float f:
                         return f.CompareTo(other._value);
+                    case double f:
+                        return f.CompareTo(other._value);
+                    case decimal f:
+                        return f.CompareTo(other._value);
                     case string s:
                         return s.CompareTo(other._value);
                     case Dictionary<string, ValueContainer> d:
