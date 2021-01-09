@@ -1,11 +1,12 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Parser.ExpressionParser.Functions.Implementations;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Parser.ExpressionParser.Functions.Implementations.CollectionFunctions;
+using Parser.ExpressionParser.Functions.Implementations.LogicalComparisonFunctions;
 using Parser.ExpressionParser.Functions.Implementations.StringFunctions;
 using Parser.ExpressionParser.Functions.Storage;
 using Parser.FlowParser;
 using Parser.FlowParser.ActionExecutors;
 using Parser.FlowParser.ActionExecutors.Implementations;
+using LengthFunction = Parser.ExpressionParser.Functions.Implementations.StringFunctions.LengthFunction;
 
 namespace Parser.ExpressionParser.Functions.Base
 {
@@ -28,12 +29,13 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddScoped<ExpressionGrammar>();
 
             AddStringFunctions(services);
+            AddCollectionFunction(services);
 
             services.AddTransient<IFunction, VariablesFunction>();
             services.AddTransient<IFunction, OutputsFunction>();
             services.AddTransient<IFunction, TriggerOutputsFunctions>();
             services.AddTransient<IFunction, ItemsFunction>();
-            
+
             services.AddTransient<IFunction, LengthFunction>();
             services.AddTransient<IFunction, GreaterFunction>();
 
@@ -43,7 +45,7 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddFlowActionByFlowType<ForEachActionExecutor>("Foreach");
             services.AddFlowActionByFlowType<DoUntilActionExecutor>("Until");
             services.AddFlowActionByFlowType<SwitchActionExecutor>("Switch");
-            
+
             services.AddLogging();
         }
 
@@ -63,6 +65,20 @@ namespace Parser.ExpressionParser.Functions.Base
             services.AddTransient<IFunction, ToLowerFunction>();
             services.AddTransient<IFunction, ToUpperFunction>();
             services.AddTransient<IFunction, TrimFunction>();
+        }
+
+        private static void AddCollectionFunction(IServiceCollection services)
+        {
+            services.AddTransient<IFunction, ContainsFunction>();
+            services.AddTransient<IFunction, EmptyFunction>();
+            services.AddTransient<IFunction, FirstFunction>();
+            services.AddTransient<IFunction, InterSectionFunction>();
+            services.AddTransient<IFunction, JoinFunction>();
+            services.AddTransient<IFunction, LastFunction>();
+            services.AddTransient<IFunction, LengthFunction>();
+            services.AddTransient<IFunction, SkipFunction>();
+            services.AddTransient<IFunction, TakeFunction>();
+            services.AddTransient<IFunction, UnionFunction>();
         }
 
         public static void AddFlowActionByName<T>(this IServiceCollection services, string actionName)
