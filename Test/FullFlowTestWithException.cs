@@ -6,13 +6,14 @@ using NUnit.Framework;
 using Parser;
 using Parser.ExpressionParser;
 using Parser.ExpressionParser.Functions.Base;
+using Parser.ExpressionParser.Functions.Implementations.ConversionFunctions;
 using Parser.FlowParser;
 using Parser.FlowParser.ActionExecutors;
 
 namespace Test
 {
     [TestFixture]
-    public class FullFlowTest
+    public class FullFlowTestWithException
     {
         private static readonly string TestFlowPath = System.IO.Path.GetFullPath(@"FlowSamples");
 
@@ -28,8 +29,8 @@ namespace Test
 
             services.AddFlowActionByName<Second>(Second.FlowActionName);
             services.AddFlowActionByApiIdAndOperationsName<Third>(Third.ApiId, Third.SupportedOperations);
-            services.AddFlowActionByName<Fourth>(Fourth.FlowActionName);
-            services.AddFlowActionByName<Fifth>(Fifth.FlowActionName);
+
+            services.Configure<FlowSettings>(x => { x.FailOnUnknownAction = false; });
 
             services.AddFlowRunner();
 
@@ -38,18 +39,7 @@ namespace Test
 
             flowRunner.InitializeFlowRunner(path);
 
-            await flowRunner.Trigger();
-
-            var state = sp.GetRequiredService<IState>();
-
-            Assert.IsTrue(state.GetOutputs("Update_Account_-_Invalid_Id").Type() != ValueContainer.ValueType.Null);
-            Assert.IsTrue(state.GetOutputs("Send_me_an_email_notification").Type() != ValueContainer.ValueType.Null);
-            Assert.IsTrue(state.GetOutputs("Update_Account_-_Valid_Id").Type() == ValueContainer.ValueType.Null);
-
-            Assert.IsTrue(state.GetOutputs("Update_Account_-_Invalid_Id").GetValue<bool>(),
-                "Second action wasn't triggered");
-            Assert.IsTrue(state.GetOutputs("Send_me_an_email_notification").GetValue<bool>(),
-                "Third action wasn't triggered");
+            Assert.ThrowsAsync<PowerAutomateMockUpException>(async () => await flowRunner.Trigger());
         }
 
         private class TriggerActionExecutor : DefaultBaseActionExecutor
@@ -77,8 +67,6 @@ namespace Test
 
             public override Task<ActionResult> Execute()
             {
-                Assert.AreEqual(FlowActionName, ActionName);
-
                 return Task.FromResult(new ActionResult
                     {ActionStatus = ActionStatus.Failed, ActionOutput = new ValueContainer(true)});
             }
@@ -95,49 +83,10 @@ namespace Test
 
             public override Task<ActionResult> Execute()
             {
-                Assert.AreEqual("Send_me_an_email_notification", ActionName);
-
-                Console.WriteLine($"Email Title: {Parameters["NotificationEmailDefinition/notificationSubject"]}");
-                Console.WriteLine($"Email Content: {Parameters["NotificationEmailDefinition/notificationBody"]}");
-                return Task.FromResult(new ActionResult {ActionOutput = new ValueContainer(true)});
+                return Task.FromResult(new ActionResult {ActionStatus = ActionStatus.Failed});
             }
 
             public Third(IExpressionEngine expressionEngine) : base(expressionEngine)
-            {
-            }
-        }
-
-        private class Fourth : OpenApiConnectionActionExecutorBase
-        {
-            public const string FlowActionName = "Get_a_record_-_Valid_Id";
-
-            public Fourth(IExpressionEngine expressionEngine) : base(expressionEngine)
-            {
-            }
-
-            public override Task<ActionResult> Execute()
-            {
-                Assert.AreEqual(FlowActionName, ActionName);
-
-                Assert.AreEqual("accounts", Parameters["entityName"].GetValue<string>());
-                Assert.AreNotEqual(ValueContainer.ValueType.Null, Parameters["recordId"]);
-
-                return Task.FromResult(new ActionResult {ActionOutput = new ValueContainer(true)});
-            }
-        }
-
-        private class Fifth : OpenApiConnectionActionExecutorBase
-        {
-            public const string FlowActionName = "Update_Account_-_Valid_Id";
-
-            public override Task<ActionResult> Execute()
-            {
-                Assert.AreEqual(FlowActionName, ActionName);
-
-                return Task.FromResult(new ActionResult());
-            }
-
-            public Fifth(IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
         }

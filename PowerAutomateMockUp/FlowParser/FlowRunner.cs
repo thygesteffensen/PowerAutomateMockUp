@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,19 +18,22 @@ namespace Parser.FlowParser
         private readonly FlowSettings _flowRunnerSettings;
         private readonly IScopeDepthManager _scopeManager;
         private readonly ActionExecutorFactory _actionExecutorFactory;
+        private readonly ILogger<FlowRunner> _logger;
         private JProperty _trigger;
 
         public FlowRunner(
             IState state,
             IScopeDepthManager scopeDepthManager,
             IOptions<FlowSettings> flowRunnerSettings,
-            ActionExecutorFactory actionExecutorFactory)
+            ActionExecutorFactory actionExecutorFactory,
+            ILogger<FlowRunner> logger)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
             _scopeManager = scopeDepthManager;
             _flowRunnerSettings = flowRunnerSettings?.Value;
             _actionExecutorFactory =
                 actionExecutorFactory ?? throw new ArgumentNullException(nameof(actionExecutorFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public void InitializeFlowRunner(in string path)
@@ -77,7 +81,7 @@ namespace Parser.FlowParser
                 var actionExecutor = GetActionExecutor(currentAd);
 
                 var actionResult = await ExecuteAction(actionExecutor, currentAd);
-                if (!actionResult.ContinueExecution)
+                if (!(actionResult?.ContinueExecution ?? true))
                 {
                     break;
                 }
@@ -86,8 +90,8 @@ namespace Parser.FlowParser
                 // actions status is transferred to be the scope status. This isn't the case atm
 
                 var actionDescName = currentAd.Name;
-                var nextAction = actionResult.NextAction;
-                var actionResultStatus = actionResult.ActionStatus;
+                var nextAction = actionResult?.NextAction;
+                var actionResultStatus = actionResult?.ActionStatus ?? ActionStatus.Succeeded;
                 while (!DetermineNextAction(nextAction, actionResultStatus, out currentAd, actionDescName))
                 {
                     nextAction = null;
@@ -100,6 +104,15 @@ namespace Parser.FlowParser
 
                     actionResultStatus = t.ActionStatus;
                     actionDescName = t.NextAction;
+                }
+
+                if (currentAd == null && actionResult.ActionStatus == ActionStatus.Failed)
+                {
+                    _logger.LogError(
+                        "No succeeding action found after last action had status: Failed. Throwing error.");
+                    throw actionResult.ActionExecutorException ??
+                          new PowerAutomateMockUpException(
+                              $"No exception recorded - {actionExecutor.ActionName} ended with status: Failed.");
                 }
             }
         }

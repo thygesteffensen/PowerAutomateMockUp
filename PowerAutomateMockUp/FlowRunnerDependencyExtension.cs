@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Parser.ExpressionParser;
+using Parser.ExpressionParser.Functions.Base;
 using Parser.ExpressionParser.Functions.Implementations.CollectionFunctions;
 using Parser.ExpressionParser.Functions.Implementations.LogicalComparisonFunctions;
 using Parser.ExpressionParser.Functions.Implementations.StringFunctions;
@@ -8,7 +10,7 @@ using Parser.FlowParser.ActionExecutors;
 using Parser.FlowParser.ActionExecutors.Implementations;
 using LengthFunction = Parser.ExpressionParser.Functions.Implementations.StringFunctions.LengthFunction;
 
-namespace Parser.ExpressionParser.Functions.Base
+namespace Parser
 {
     public static class FlowRunnerDependencyExtension
     {
