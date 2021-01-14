@@ -46,8 +46,10 @@ namespace Test
             Assert.IsTrue(state.GetOutputs("Send_me_an_email_notification").Type() != ValueContainer.ValueType.Null);
             Assert.IsTrue(state.GetOutputs("Update_Account_-_Valid_Id").Type() == ValueContainer.ValueType.Null);
 
-            Assert.IsTrue(state.GetOutputs("Update_Account_-_Invalid_Id").GetValue<bool>(), "Second action wasn't triggered");
-            Assert.IsTrue(state.GetOutputs("Send_me_an_email_notification").GetValue<bool>(), "Third action wasn't triggered");
+            Assert.IsTrue(state.GetOutputs("Update_Account_-_Invalid_Id").GetValue<bool>(),
+                "Second action wasn't triggered");
+            Assert.IsTrue(state.GetOutputs("Send_me_an_email_notification").GetValue<bool>(),
+                "Third action wasn't triggered");
         }
 
         private class TriggerActionExecutor : DefaultBaseActionExecutor
@@ -116,6 +118,9 @@ namespace Test
             public override Task<ActionResult> Execute()
             {
                 Assert.AreEqual(FlowActionName, ActionName);
+
+                Assert.AreEqual("accounts", Parameters["entityName"].GetValue<string>());
+                Assert.AreNotEqual(ValueContainer.ValueType.Null, Parameters["recordId"]);
 
                 return Task.FromResult(new ActionResult {ActionOutput = new ValueContainer(true)});
             }
