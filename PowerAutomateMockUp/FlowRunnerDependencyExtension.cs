@@ -14,14 +14,12 @@ namespace Parser
 {
     public static class FlowRunnerDependencyExtension
     {
-        // TODO: Her kan vi give en option med, så de kan sige hvad de gerne vil have med. 
-        // public static void AddFlowRunner(this IServiceCollection services, FlowSettings flowSettings)
         public static void AddFlowRunner(this IServiceCollection services)
         {
-            services.AddSingleton<FlowRunner>();
+            services.AddScoped<FlowRunner>();
 
-            services.AddSingleton<ActionExecutorFactory>();
-            services.AddSingleton<IScopeDepthManager, ScopeDepthManager>();
+            services.AddScoped<ActionExecutorFactory>();
+            services.AddScoped<IScopeDepthManager, ScopeDepthManager>();
 
             services.AddScoped<IState, State>();
             services.AddScoped<IVariableRetriever>(x => x.GetRequiredService<IState>());

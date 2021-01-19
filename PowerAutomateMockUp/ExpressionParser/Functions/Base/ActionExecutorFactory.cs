@@ -18,7 +18,7 @@ namespace Parser.ExpressionParser.Functions.Base
         public ActionExecutorBase ResolveActionByKey(string key)
         {
             var axRegistrationList = _serviceProvider.GetRequiredService<IEnumerable<ActionExecutorRegistration>>();
-            var axRegistration = axRegistrationList.FirstOrDefault(x => x.ActionName == key);
+            var axRegistration = axRegistrationList.LastOrDefault(x => x.ActionName == key);
             return axRegistration == null
                 ? null
                 : _serviceProvider.GetRequiredService(axRegistration.Type) as ActionExecutorBase;
@@ -27,7 +27,7 @@ namespace Parser.ExpressionParser.Functions.Base
         public ActionExecutorBase ResolveActionByType(string actionType)
         {
             var axRegistrationList = _serviceProvider.GetRequiredService<IEnumerable<ActionExecutorRegistration>>();
-            var axRegistration = axRegistrationList.FirstOrDefault(x => x.ActionType == actionType);
+            var axRegistration = axRegistrationList.LastOrDefault(x => x.ActionType == actionType);
             return axRegistration == null
                 ? null
                 : _serviceProvider.GetRequiredService(axRegistration.Type) as ActionExecutorBase;
@@ -36,7 +36,7 @@ namespace Parser.ExpressionParser.Functions.Base
         public ActionExecutorBase ResolveActionByApiId(string apiId, string operationName)
         {
             var axRegistrationList = _serviceProvider.GetRequiredService<IEnumerable<ActionExecutorRegistration>>();
-            var axRegistration = axRegistrationList.FirstOrDefault(
+            var axRegistration = axRegistrationList.LastOrDefault(
                 x => x.ActionApiId == apiId && x.SupportedOperationNames.Contains(operationName));
             return axRegistration == null
                 ? null

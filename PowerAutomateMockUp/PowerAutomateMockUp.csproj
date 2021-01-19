@@ -6,7 +6,7 @@
 
         <LangVersion>8</LangVersion> <!-- Max version when using dotnet framework -->
 
-        <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">DOT_NET_CORE</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp3.1'">DOT_NET_CORE</DefineConstants>
         <DefineConstants Condition="'$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'net462'">DOT_NET_FRAMEWORK</DefineConstants>
 
         <!--        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->

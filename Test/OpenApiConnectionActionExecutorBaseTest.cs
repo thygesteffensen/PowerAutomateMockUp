@@ -23,8 +23,6 @@ namespace Test
 
             var services = new ServiceCollection();
 
-            services.Configure<FlowSettings>(x => { });
-
             services.AddFlowActionByApiIdAndOperationsName<Trigger>(Trigger.ApiId,
                 Trigger.SupportedOperations);
 

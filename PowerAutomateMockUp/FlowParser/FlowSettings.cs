@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Parser.FlowParser
 {
     public class FlowSettings
     {
-        public FlowSettings()
-        {
-            IgnoreActions = new List<string>();
-        }
+
+        public Action<IServiceCollection> ServiceConfiguration { get; set; }
 
         public bool FailOnUnknownAction { get; set; } = true;
 
-        public List<string> IgnoreActions { get; set; }
+        public List<string> IgnoreActions { get; set; } = new List<string>();
 
         public Stream GetAsJsonStream()
         {
