@@ -25,6 +25,7 @@ namespace Parser
             services.AddScoped<IVariableRetriever>(x => x.GetRequiredService<IState>());
             services.AddScoped<IOutputsRetriever>(x => x.GetRequiredService<IState>());
             services.AddScoped<ITriggerOutputsRetriever>(x => x.GetRequiredService<IState>());
+            services.AddScoped<IItemsRetriever>(x => x.GetRequiredService<IState>());
             services.AddScoped<IExpressionEngine, ExpressionEngine>();
             services.AddScoped<ExpressionGrammar>();
 

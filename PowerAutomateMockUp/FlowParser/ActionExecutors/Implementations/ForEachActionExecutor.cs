@@ -8,7 +8,13 @@ using Parser.ExpressionParser;
 
 namespace Parser.FlowParser.ActionExecutors.Implementations
 {
-    public class ForEachActionExecutor : DefaultBaseActionExecutor, IScopeActionExecutor
+    public class IItem
+    {
+        // item list
+        // current item
+    }
+
+    public class ForEachActionExecutor : DefaultBaseActionExecutor, IScopeActionExecutor, IItemHandler
     {
         private readonly IState _state;
         private readonly IScopeDepthManager _scopeDepthManager;
@@ -18,7 +24,9 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
         private JProperty[] _actionDescriptions;
         private string _firstScopeActionName;
 
+
         private List<ValueContainer> _items;
+        private int _currentItemIndex = 0;
 
         public ForEachActionExecutor(
             IState state,
@@ -71,22 +79,22 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                 !(ad.Value.SelectToken("$.runAfter") ??
                   throw new InvalidOperationException("Json must contain runAfter token.")).Any()).Name;
 
-            // TODO: Add scope relevant storage to store stuff like this, which cannot interfere with the state.
             _items = values.GetValue<IEnumerable<ValueContainer>>().ToList();
+
+            _state.AddItemHandler(ActionName, this);
         }
 
         private void UpdateScopeAndSetItemValue()
         {
             _scopeDepthManager.Push(ActionName, _actionDescriptions, this);
 
-            _state.AddOutputs($"item_{ActionName}", _items.First());
-            _items = _items.Skip(1).ToList();
+            _currentItemIndex++;
         }
 
 
         public Task<ActionResult> ExitScope(ActionStatus scopeStatus)
         {
-            if (_items.Count > 0)
+            if (_items.Count >= _currentItemIndex)
             {
                 _logger.LogInformation("Continuing foreach.");
 
@@ -99,6 +107,11 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                 _logger.LogInformation("Exited foreach...");
                 return Task.FromResult(new ActionResult());
             }
+        }
+
+        public ValueContainer GetCurrentItem()
+        {
+            return _items[_currentItemIndex];
         }
     }
 }

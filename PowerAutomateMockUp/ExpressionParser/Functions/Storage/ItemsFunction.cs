@@ -6,9 +6,9 @@ namespace Parser.ExpressionParser.Functions.Storage
 {
     public class ItemsFunction : Function
     {
-        private readonly IState _variableRetriever;
+        private readonly IItemsRetriever _variableRetriever;
 
-        public ItemsFunction(IState variableRetriever) : base("items")
+        public ItemsFunction(IItemsRetriever variableRetriever) : base("items")
         {
             _variableRetriever = variableRetriever ?? throw new ArgumentNullException(nameof(variableRetriever));
         }
@@ -21,8 +21,8 @@ namespace Parser.ExpressionParser.Functions.Storage
             }
 
             var variableName = parameters[0].GetValue<string>();
-            // TODO: Maybe implement another storage option?
-            var value = _variableRetriever.GetOutputs($"item_{variableName}");
+            
+            var value = _variableRetriever.GetCurrentItem(variableName);
 
             return value;
         }
