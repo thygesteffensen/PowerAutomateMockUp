@@ -8,12 +8,6 @@ using Parser.ExpressionParser;
 
 namespace Parser.FlowParser.ActionExecutors.Implementations
 {
-    public class IItem
-    {
-        // item list
-        // current item
-    }
-
     public class ForEachActionExecutor : DefaultBaseActionExecutor, IScopeActionExecutor, IItemHandler
     {
         private readonly IState _state;

@@ -49,7 +49,7 @@ var path = "<path to flow definition>";
 // from Microsoft.Extensions.DependencyInjection
 var services = new ServiceCollection();
 
-services.Configure<FlowSettings>(x => { });
+services.Configure<FlowSettings>(x => { }); // Optional way to add settings
 
 // Required to set up required dependencies
 services.AddFlowRunner(); 
@@ -66,7 +66,7 @@ await flowRunner.Trigger();
 ```
 
 ### Adding actions
-Actions can added in three ways
+Actions can be added in three ways
 
 1. Using specific action name
 2. Using Connection ApiId and supported OperationIds
@@ -77,7 +77,7 @@ Actions can added in three ways
 services.AddFlowActionByName<GetMsnWeather>("Get_forecast_for_today_(Metric)");
 ```
 
-When the action named *Get_forecast_for_today_(Metric)* is reached and about to be executed, the class with type GetMsnWeather is retrieved from the ServiceProvider and called.
+When the action named *Get_forecast_for_today_(Metric)* is reached and about to be executed, the class with type GetMsnWeather is retrieved from the ServiceProvider and used to execute the action.
 
 #### 2. Using Connection ApiId and supported OperationIds
 ```c#
@@ -87,18 +87,20 @@ services.AddFlowActionByApiIdAndOperationsName<Notification>(
     new []{ "SendEmailNotification", "SendNotification" });
 ```
 
-When an action from the **Notification** connector with one of the supported types is reached in the flow, a action executor instance of type Notification is created and used.
+When an action from the **Notification** connector with one of the supported types is reached in the flow, a action executor instance of type `Notification` is created and used to execute the action.
 
 #### 3. Using Action type (**Not recommended**)
 ```c#
 services.AddFlowActionByFlowType<IfActionExecutor>("If");
 ```
-When the generic action type **If** i reached, a action executor instance of type Notification is created and used.
+When the generic action type **If** i reached, an action executor instance of type `IfActionExecutor` is created and used to execute the action.
 
-This is not recommended due to the fact that every OpenApiConnection connector will have the type OpenApiConnection. This means that both Common Data Service (current environment) and many others, will use the same action executors, which is not the correct way to do it.
+This is not recommended due to the fact that every OpenApiConnection connector will have the type **OpenApiConnection**. This means that both Common Data Service (current environment) and many others, will use the same action executors, which is not the correct way to do it.
+
+This way of resolving an action executor is only used to resolve actions, where only one Action uses that type. This is **If**, **DoUntil** etc.
 
 ### Creating action executors.
-Currently there are two classes to extend, the one is **DefaultBaseActionExecutor** and the other are **OpenApiConnectionBaseActionExecutor**.
+Currently there are two classes to extend, one is **DefaultBaseActionExecutor** and the other is **OpenApiConnectionBaseActionExecutor**.
 
 #### DefaultBaseActionExecutor
 ```c#
