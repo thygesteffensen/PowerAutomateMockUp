@@ -88,18 +88,18 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
         public Task<ActionResult> ExitScope(ActionStatus scopeStatus)
         {
-            if (_items.Count >= _currentItemIndex)
+            if (_currentItemIndex >= _items.Count)
+            {
+                _logger.LogInformation("Exited foreach...");
+                return Task.FromResult(new ActionResult());
+            }
+            else
             {
                 _logger.LogInformation("Continuing foreach.");
 
                 UpdateScopeAndSetItemValue();
 
                 return Task.FromResult(new ActionResult {NextAction = _firstScopeActionName});
-            }
-            else
-            {
-                _logger.LogInformation("Exited foreach...");
-                return Task.FromResult(new ActionResult());
             }
         }
 
