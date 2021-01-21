@@ -71,9 +71,6 @@ namespace Parser
             }
 #endif
 
-            // Todo: Finish the State Machine and figure out how this should be handled properly
-
-
             if (!scopePopSuccessful)
             {
                 return null;

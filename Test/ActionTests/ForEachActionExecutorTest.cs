@@ -88,7 +88,7 @@ namespace Test.ActionTests
 
             Assert.AreEqual("Update_a_record", response.NextAction);
 
-            stateMock.Verify(x => x.AddOutputs(It.IsAny<string>(), It.IsAny<ValueContainer>()), Times.Exactly(1));
+            stateMock.Verify(x => x.AddItemHandler(It.IsAny<string>(), It.IsAny<IItemHandler>()), Times.Once);
             sdmMock.Verify(x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(),
                 It.Is<ForEachActionExecutor>(actionExecutor =>
                     actionExecutor.Equals(forEachActionExecutor))), Times.Exactly(1));
@@ -96,7 +96,7 @@ namespace Test.ActionTests
             var exitAnswer1 = await forEachActionExecutor.ExitScope(ActionStatus.Succeeded);
             Assert.AreEqual("Update_a_record", exitAnswer1.NextAction);
 
-            stateMock.Verify(x => x.AddOutputs(It.IsAny<string>(), It.IsAny<ValueContainer>()), Times.Exactly(2));
+            stateMock.Verify(x => x.AddItemHandler(It.IsAny<string>(), It.IsAny<IItemHandler>()), Times.Once);
             sdmMock.Verify(x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(),
                 It.Is<ForEachActionExecutor>(actionExecutor =>
                     actionExecutor.Equals(forEachActionExecutor))), Times.Exactly(2));
@@ -105,7 +105,7 @@ namespace Test.ActionTests
 
             Assert.AreEqual("Update_a_record", exitAnswer2.NextAction);
 
-            stateMock.Verify(x => x.AddOutputs(It.IsAny<string>(), It.IsAny<ValueContainer>()), Times.Exactly(3));
+            stateMock.Verify(x => x.AddItemHandler(It.IsAny<string>(), It.IsAny<IItemHandler>()), Times.Once);
             sdmMock.Verify(x => x.Push(It.IsAny<string>(), It.IsAny<IEnumerable<JProperty>>(),
                 It.Is<ForEachActionExecutor>(actionExecutor =>
                     actionExecutor.Equals(forEachActionExecutor))), Times.Exactly(3));
