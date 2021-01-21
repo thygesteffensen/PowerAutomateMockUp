@@ -6,7 +6,14 @@ using Parser.FlowParser.ActionExecutors;
 
 namespace Parser.ExpressionParser.Functions.Base
 {
-    public class ActionExecutorFactory
+    public interface IActionExecutorFactory
+    {
+        ActionExecutorBase ResolveActionByKey(string key);
+        ActionExecutorBase ResolveActionByType(string actionType);
+        ActionExecutorBase ResolveActionByApiId(string apiId, string operationName);
+    }
+
+    public class ActionExecutorFactory : IActionExecutorFactory
     {
         private readonly IServiceProvider _sp;
 
