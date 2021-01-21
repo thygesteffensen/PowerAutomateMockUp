@@ -18,7 +18,7 @@ namespace Test
         private static readonly string TestFlowPath = System.IO.Path.GetFullPath(@"FlowSamples");
 
         [Test]
-        public async Task TestFlowFalse()
+        public void TestFlowFalse()
         {
             var path = @$"{TestFlowPath}\PowerAutomateMockUpSampleFlow.json";
 
@@ -35,7 +35,7 @@ namespace Test
             services.AddFlowRunner();
 
             var sp = services.BuildServiceProvider();
-            var flowRunner = sp.GetRequiredService<FlowRunner>();
+            var flowRunner = sp.GetRequiredService<IFlowRunner>();
 
             flowRunner.InitializeFlowRunner(path);
 

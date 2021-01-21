@@ -12,12 +12,18 @@ using Parser.FlowParser.ActionExecutors;
 
 namespace Parser.FlowParser
 {
-    public class FlowRunner
+    public interface IFlowRunner
+    {
+        void InitializeFlowRunner(in string path);
+        Task Trigger();
+    }
+
+    public class FlowRunner : IFlowRunner
     {
         private readonly IState _state;
         private readonly FlowSettings _flowRunnerSettings;
         private readonly IScopeDepthManager _scopeManager;
-        private readonly ActionExecutorFactory _actionExecutorFactory;
+        private readonly IActionExecutorFactory _actionExecutorFactory;
         private readonly ILogger<FlowRunner> _logger;
         private JProperty _trigger;
 
@@ -25,7 +31,7 @@ namespace Parser.FlowParser
             IState state,
             IScopeDepthManager scopeDepthManager,
             IOptions<FlowSettings> flowRunnerSettings,
-            ActionExecutorFactory actionExecutorFactory,
+            IActionExecutorFactory actionExecutorFactory,
             ILogger<FlowRunner> logger)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));

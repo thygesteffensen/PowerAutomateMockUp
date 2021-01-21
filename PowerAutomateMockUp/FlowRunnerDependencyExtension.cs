@@ -16,9 +16,9 @@ namespace Parser
     {
         public static void AddFlowRunner(this IServiceCollection services)
         {
-            services.AddScoped<FlowRunner>();
+            services.AddScoped<IFlowRunner, FlowRunner>();
 
-            services.AddScoped<ActionExecutorFactory>();
+            services.AddScoped<IActionExecutorFactory, ActionExecutorFactory>();
             services.AddScoped<IScopeDepthManager, ScopeDepthManager>();
 
             services.AddScoped<IState, State>();

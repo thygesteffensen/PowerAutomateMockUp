@@ -31,7 +31,7 @@ namespace Test
             services.AddFlowRunner();
 
             var sp = services.BuildServiceProvider();
-            var flowRunner = sp.GetRequiredService<FlowRunner>();
+            var flowRunner = sp.GetRequiredService<IFlowRunner>();
 
             flowRunner.InitializeFlowRunner(path);
 

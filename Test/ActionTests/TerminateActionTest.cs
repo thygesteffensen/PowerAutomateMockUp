@@ -42,7 +42,7 @@ namespace Test.ActionTests
             collection.AddFlowRunner();
 
             var sp = collection.BuildServiceProvider();
-            var actionExecutorFactory = sp.GetRequiredService<ActionExecutorFactory>();
+            var actionExecutorFactory = sp.GetRequiredService<IActionExecutorFactory>();
             var action = actionExecutorFactory.ResolveActionByType("Terminate");
 
             var json =
