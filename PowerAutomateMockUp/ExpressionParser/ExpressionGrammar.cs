@@ -14,7 +14,6 @@ namespace Parser.ExpressionParser
         public ExpressionGrammar(IEnumerable<IFunction> functions)
         {
             var functionCollection = functions ?? throw new ArgumentNullException(nameof(functions));
-            // TODO: Go through parsers and reflect on the generic type. 1) Should they all be the same?
 
             #region BasicAuxParsers
 
@@ -31,8 +30,7 @@ namespace Parser.ExpressionParser
                 Parse.AnyChar.Except(Parse.Char('@')).Except(Parse.Char('(').Except(Parse.Char(')'))).AtLeastOnce()
                     .Text().Select(x => new ConstantRule(new ValueContainer(x)));
 
-            Parser<char> escapedCharacters
-                = // TODO: Figure out which characters are escaped and where they are escaped -> simpleString or allowedString?
+            Parser<char> escapedCharacters =
                 from c in
                     Parse.String("''").Select(n => '\'')
                         .Or(Parse.String("''").Select(n => '\''))
@@ -43,14 +41,11 @@ namespace Parser.ExpressionParser
                     .Contained(Parse.Char('\''), Parse.Char('\''))
                 select new StringLiteralRule(new ValueContainer(content));
 
-            Parser<string> allowedCharacters = // TODO: Verify valid characters 
-                Parse.Char('.')
-                    .Or(Parse.Char(','))
-                    .Or(Parse.Char('-'))
-                    .Or(Parse.String("@@").Select(_ => '@'))
-                    .Or(Parse.Char('@')).Except(Parse.String("@{"))
-                    .Or(Parse.Char(' '))
-                    .Select(character => character.ToString());
+            Parser<string> allowedCharacters =
+                Parse.String("@@").Select(_ => '@')
+                    .Or(Parse.AnyChar)
+                    .Except(Parse.String("@{"))
+                    .Select(c => c.ToString());
 
             #endregion
 
@@ -133,7 +128,7 @@ namespace Parser.ExpressionParser
 
             return output.GetValue<string>();
         }
-        
+
         public ValueContainer EvaluateToValueContainer(string input)
         {
             return _input.Parse(input);
