@@ -99,6 +99,7 @@ namespace Test
 
                 Console.WriteLine($"Email Title: {Parameters["NotificationEmailDefinition/notificationSubject"]}");
                 Console.WriteLine($"Email Content: {Parameters["NotificationEmailDefinition/notificationBody"]}");
+                
                 return Task.FromResult(new ActionResult {ActionOutput = new ValueContainer(true)});
             }
 

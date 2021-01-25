@@ -49,8 +49,6 @@ var path = "<path to flow definition>";
 // from Microsoft.Extensions.DependencyInjection
 var services = new ServiceCollection();
 
-services.Configure<FlowSettings>(x => { }); // Optional way to add settings
-
 // Required to set up required dependencies
 services.AddFlowRunner(); 
 
@@ -64,6 +62,18 @@ await flowRunner.Trigger();
 
 // Your flow have now ran
 ```
+
+### Configuration
+This is optional and the settings class has the default values mentioned below.
+
+The settings object is configured this way:
+```cs
+services.Configure<FlowSettings>(x => { }); // Optional way to add settings
+```
+The possbile values to set is:
+
+ * `x.FailOnUnknownAction` (default: `true`): If an action cannot be found and exception is thrown. This can be avoid and the action is ignored and the status is assumed to be `Succeeded`.
+ * `x.IgnoreActions` (default: `empty`): List of action names which are ignored during exectuion, the action is not executed and the status is assumed to be `Succeeded`.
 
 ### Adding actions
 Actions can be added in three ways

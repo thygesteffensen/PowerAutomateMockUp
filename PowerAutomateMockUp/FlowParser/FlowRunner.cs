@@ -112,11 +112,11 @@ namespace Parser.FlowParser
                     actionDescName = t.NextAction;
                 }
 
-                if (currentAd == null && actionResult.ActionStatus == ActionStatus.Failed)
+                if (currentAd == null && actionResultStatus == ActionStatus.Failed)
                 {
                     _logger.LogError(
                         "No succeeding action found after last action had status: Failed. Throwing error.");
-                    throw actionResult.ActionExecutorException ??
+                    throw actionResult?.ActionExecutorException ??
                           new PowerAutomateMockUpException(
                               $"No exception recorded - {actionExecutor.ActionName} ended with status: Failed.");
                 }
