@@ -116,20 +116,39 @@ Currently there are two classes to extend, one is **DefaultBaseActionExecutor** 
 ```c#
 private class ActionExecutor : DefaultBaseActionExecutor
 {
-    private readonly IState _state;
+    private readonly IExpressionEngine _expression;
 
     // Using dependency injection to get dependencies
-    public TriggerActionExecutor(IState state)
+    public TriggerActionExecutor(IExpressionEngine expression)
     {
-        _state = state ?? throw new ArgumentNullException(nameof(state));
+        _expression = expression ?? throw new ArgumentNullException(nameof(expression));
     }
 
     public override Task<ActionResult> Execute()
     {
-        // ... Execute action functionality
+        var result = new ActionResult();
 
-        return Task.FromResult(
-            new ActionResult {ActionStatus = ActionStatus.Succeeded});
+        try
+        {
+            // Some dangerous operation
+            // ...
+
+            result.ActionOutput = new ValueContainer(new Dictionary<string, ValueContainer>()
+            {
+                {"Key", new ValueContainer("Value")}
+            });
+            // Corresponds to: outputs('<action>').Key || outputs('<action>')['Key']
+
+            result.ActionStatus = ActionStatus.Succeeded;
+        } 
+        catch(EvenMoreDangerousException exp)
+        {
+            // PAMU handles the exceptions...
+            result.ActionStatus = ActionStatus.Failed;
+            result.ActionExecutorException = exp;
+        }
+
+        return Task.FromResult(result);
     }
 }
 ```
@@ -151,8 +170,7 @@ private class ActionExecutor : OpenApiConnectionActionExecutorBase
 
         var entityName = parameters["string"].GetValue<string>();
 
-        return Task.FromResult(
-            new ActionResult {ActionStatus = ActionStatus.Failed});
+        // ...
     }
 }
 ```
