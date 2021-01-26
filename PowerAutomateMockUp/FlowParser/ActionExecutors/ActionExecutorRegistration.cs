@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Parser.ExpressionParser.Functions.Base
+namespace Parser.FlowParser.ActionExecutors
 {
     public class ActionExecutorRegistration
     {

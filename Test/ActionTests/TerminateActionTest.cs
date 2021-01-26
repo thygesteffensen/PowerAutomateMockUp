@@ -6,7 +6,6 @@ using Parser;
 using Parser.ExpressionParser.Functions.Base;
 using Parser.FlowParser.ActionExecutors;
 using Parser.FlowParser.ActionExecutors.Implementations;
-using Parser.FlowParser.CustomExceptions;
 
 namespace Test.ActionTests
 {
@@ -49,7 +48,7 @@ namespace Test.ActionTests
                 "{\"Terminate\": { \"runAfter\": {}, \"type\": \"Terminate\", \"inputs\": { \"runStatus\": \"Failed\", \"runError\": { \"code\": \"1234\" } } } }";
             action.InitializeActionExecutor("TerminateAction", JToken.Parse(json).First.First);
 
-            var exception = Assert.ThrowsAsync<FlowRunnerException>(async () => { await action.Execute(); });
+            var exception = Assert.ThrowsAsync<PowerAutomateMockUpException>(async () => { await action.Execute(); });
 
             Assert.AreEqual("Terminate action with status: Failed. Error code: 1234.",exception.Message);
         }

@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Parser.FlowParser.ActionExecutors;
 
-namespace Parser.ExpressionParser.Functions.Base
+namespace Parser.FlowParser.ActionExecutors
 {
     public interface IActionExecutorFactory
     {

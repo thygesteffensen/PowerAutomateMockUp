@@ -49,8 +49,6 @@ var path = "<path to flow definition>";
 // from Microsoft.Extensions.DependencyInjection
 var services = new ServiceCollection();
 
-services.Configure<FlowSettings>(x => { }); // Optional way to add settings
-
 // Required to set up required dependencies
 services.AddFlowRunner(); 
 
@@ -64,6 +62,18 @@ await flowRunner.Trigger();
 
 // Your flow have now ran
 ```
+
+### Configuration
+This is optional and the settings class has the default values mentioned below.
+
+The settings object is configured this way:
+```cs
+services.Configure<FlowSettings>(x => { }); // Optional way to add settings
+```
+The possbile values to set is:
+
+ * `x.FailOnUnknownAction` (default: `true`): If an action cannot be found and exception is thrown. This can be avoid and the action is ignored and the status is assumed to be `Succeeded`.
+ * `x.IgnoreActions` (default: `empty`): List of action names which are ignored during exectuion, the action is not executed and the status is assumed to be `Succeeded`.
 
 ### Adding actions
 Actions can be added in three ways
@@ -106,20 +116,39 @@ Currently there are two classes to extend, one is **DefaultBaseActionExecutor** 
 ```c#
 private class ActionExecutor : DefaultBaseActionExecutor
 {
-    private readonly IState _state;
+    private readonly IExpressionEngine _expression;
 
     // Using dependency injection to get dependencies
-    public TriggerActionExecutor(IState state)
+    public TriggerActionExecutor(IExpressionEngine expression)
     {
-        _state = state ?? throw new ArgumentNullException(nameof(state));
+        _expression = expression ?? throw new ArgumentNullException(nameof(expression));
     }
 
     public override Task<ActionResult> Execute()
     {
-        // ... Execute action functionality
+        var result = new ActionResult();
 
-        return Task.FromResult(
-            new ActionResult {ActionStatus = ActionStatus.Succeeded});
+        try
+        {
+            // Some dangerous operation
+            // ...
+
+            result.ActionOutput = new ValueContainer(new Dictionary<string, ValueContainer>()
+            {
+                {"Key", new ValueContainer("Value")}
+            });
+            // Corresponds to: outputs('<action>').Key || outputs('<action>')['Key']
+
+            result.ActionStatus = ActionStatus.Succeeded;
+        } 
+        catch(EvenMoreDangerousException exp)
+        {
+            // PAMU handles the exceptions...
+            result.ActionStatus = ActionStatus.Failed;
+            result.ActionExecutorException = exp;
+        }
+
+        return Task.FromResult(result);
     }
 }
 ```
@@ -141,8 +170,7 @@ private class ActionExecutor : OpenApiConnectionActionExecutorBase
 
         var entityName = parameters["string"].GetValue<string>();
 
-        return Task.FromResult(
-            new ActionResult {ActionStatus = ActionStatus.Failed});
+        // ...
     }
 }
 ```

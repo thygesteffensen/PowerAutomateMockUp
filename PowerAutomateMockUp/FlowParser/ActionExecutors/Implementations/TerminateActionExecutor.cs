@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Parser.ExpressionParser;
-using Parser.FlowParser.CustomExceptions;
 
 namespace Parser.FlowParser.ActionExecutors.Implementations
 {
@@ -34,7 +33,7 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                     var exceptionMessage = "Terminate action with status: Failed.";
                     
                     if (!Inputs.GetValue<Dictionary<string, ValueContainer>>()
-                        .TryGetValue("runError", out var runErrorDict)) throw new FlowRunnerException(exceptionMessage);
+                        .TryGetValue("runError", out var runErrorDict)) throw new PowerAutomateMockUpException(exceptionMessage);
                     
                     var dict = runErrorDict.GetValue<Dictionary<string, ValueContainer>>();
 
@@ -45,13 +44,13 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
                     if (dict.TryGetValue("message", out var message))
                     {
-                        exceptionMessage += $" Error code: {message}.";
+                        exceptionMessage += $" Error message: {message}.";
                     }
                     
                     _logger.LogInformation(
                         $"Terminate Action {ActionName} reached with status {runStatus}. Error code: {code}. Error message: {message}. Throwing exception.");
                     
-                    throw new FlowRunnerException(exceptionMessage);
+                    throw new PowerAutomateMockUpException(exceptionMessage);
                 default:
                     throw new Exception($"Unknown runStatus: {runStatus}");
             }
