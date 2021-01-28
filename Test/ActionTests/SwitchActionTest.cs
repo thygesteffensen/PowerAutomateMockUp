@@ -72,7 +72,7 @@ namespace Test.ActionTests
             Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
 
             sdm.Verify(
-                x => x.Push(It.IsAny<string>(), 
+                x => x.Push(It.IsAny<string>(),
                     It.IsAny<IEnumerable<JProperty>>()
                     , It.IsAny<IScopeActionExecutor>()),
                 Times.Never);
