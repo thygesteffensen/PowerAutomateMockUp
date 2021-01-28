@@ -136,7 +136,7 @@ namespace Parser.FlowParser
             else
             {
                 currentActionDesc =
-                    _scopeManager.CurrentActionDescriptions.First(a => a.Name == nextAction);
+                    _scopeManager.CurrentActionDescriptions.FirstOrDefault(a => a.Name == nextAction);
             }
 
             return currentActionDesc != null;
