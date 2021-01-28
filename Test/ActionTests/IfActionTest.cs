@@ -285,5 +285,51 @@ namespace Test.ActionTests
             Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
             Assert.AreEqual("TerminateTrue", result.NextAction);
         }
+        
+        [Test]
+        public async Task NoElseTest()
+        {
+            var expressionParserMock = new Mock<IExpressionEngine>();
+            var log = TestLogger.Create<IfActionExecutor>();
+
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
+
+            const string ifJson =
+                "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
+                "\"runAfter\":{\"Status_Reason_-_Failed\":[\"Succeeded\"]}," +
+                "\"expression\":{\"and\":[{\"endsWith\":[\"Jane Doe\",\"Nope\"]},{\"not\":{\"endsWith\":[\"John Doe\",\"John\"]},}]},\"type\":\"If\"}";
+
+            var ifAction = new IfActionExecutor(expressionParserMock.Object, log);
+            ifAction.InitializeActionExecutor("IfActionTest", JToken.Parse(ifJson));
+
+            var result = await ifAction.Execute();
+
+            Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
+            Assert.AreEqual(null, result.NextAction);
+        }
+        
+        [Test]
+        public async Task EmptyActionTest()
+        {
+            var expressionParserMock = new Mock<IExpressionEngine>();
+            var log = TestLogger.Create<IfActionExecutor>();
+
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
+
+            const string ifJson =
+                "{\"actions\":{}," +
+                "\"runAfter\":{\"Status_Reason_-_Failed\":[\"Succeeded\"]}," +
+                "\"expression\":{\"and\":[{\"endsWith\":[\"Jane Doe\",\"Doe\"]},{\"not\":{\"endsWith\":[\"John Doe\",\"John\"]},}]},\"type\":\"If\"}";
+
+            var ifAction = new IfActionExecutor(expressionParserMock.Object, log);
+            ifAction.InitializeActionExecutor("IfActionTest", JToken.Parse(ifJson));
+
+            var result = await ifAction.Execute();
+
+            Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
+            Assert.AreEqual(null, result.NextAction);
+        }
     }
 }

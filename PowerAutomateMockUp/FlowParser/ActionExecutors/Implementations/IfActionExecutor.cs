@@ -37,24 +37,24 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
             if (result)
             {
                 var actions = Json.SelectToken("$.actions");
-                if (actions.HasValues)
+                if (actions?.HasValues ?? false)
                 {
                     return Task.FromResult(
                         new ActionResult
                         {
-                            NextAction = ((JProperty) actions.First).Name
+                            NextAction = ((JProperty) actions.First)?.Name
                         });
                 }
             }
             else
             {
                 var elseActions = Json.SelectToken("$.else.actions");
-                if (elseActions.HasValues)
+                if (elseActions?.HasValues ?? false)
                 {
                     return Task.FromResult(
                         new ActionResult
                         {
-                            NextAction = ((JProperty) elseActions.First).Name
+                            NextAction = ((JProperty) elseActions.First)?.Name
                         });
                 }
             }
