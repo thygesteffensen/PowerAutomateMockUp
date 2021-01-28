@@ -34,8 +34,8 @@ namespace Parser.ExpressionParser.Rules
 
         public string PrettyPrint()
         {
-            var seed = _args.First().PrettyPrint();
-            var argumentList = _args.Skip(1).Aggregate(seed, (s, rule) => s + ", " + rule.PrettyPrint());
+            var seed = _args?.First().PrettyPrint();
+            var argumentList = _args?.Skip(1).Aggregate(seed, (s, rule) => s + ", " + rule.PrettyPrint());
             return $"{FunctionName}({argumentList})";
         }
     }
