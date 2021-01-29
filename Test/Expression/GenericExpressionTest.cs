@@ -5,18 +5,17 @@ using Parser.ExpressionParser.Functions.Base;
 namespace Test.Expression
 {
     [TestFixture]
-    public class GenericExceptionTest
+    public class GenericExpressionTest
     {
-        [Test,TestCaseSource(typeof(StringFunctionTests), nameof(StringFunctionTests.StringFunctionTestInput))]
+        [Test, TestCaseSource(typeof(StringFunctionTests), nameof(StringFunctionTests.StringFunctionTestInput))]
         [TestCaseSource(typeof(CollectionFunctionTests), nameof(CollectionFunctionTests.CollectionFunctionTestInput))]
         [TestCaseSource(typeof(LogicalFunctionTest), nameof(LogicalFunctionTest.LogicalFunctionTestInput))]
-        public void TestFunctions(Function func, string name, ValueContainer[] parameters,
-            ValueContainer expected)
+        public void TestFunction(Function func, string name,
+            ValueContainer[] parameters, ValueContainer expected)
         {
-            Assert.AreEqual(name, func.FunctionName);
-
             var result = func.ExecuteFunction(parameters);
 
+            Assert.AreEqual(name, func.FunctionName);
             Assert.AreEqual(expected, result);
         }
     }

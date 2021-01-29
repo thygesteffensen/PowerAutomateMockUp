@@ -152,6 +152,26 @@
             },
             "authentication": "@parameters('$authentication')"
           }
+        },
+        "Send_an_error_message_to_owner": {
+          "runAfter": {
+            "Scope:_Catch": [
+              "Failed"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_flowpush",
+              "operationId": "SendEmailNotification",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowpush"
+            },
+            "parameters": {
+              "NotificationEmailDefinition/notificationSubject": "Your flow failed",
+              "NotificationEmailDefinition/notificationBody": "Fix it please."
+            },
+            "authentication": "@parameters('$authentication')"
+          }
         }
       },
       "outputs": {}

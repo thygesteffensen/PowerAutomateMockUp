@@ -136,7 +136,7 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                         if (value1.Type() != ValueContainer.ValueType.String ||
                             value2.Type() != ValueContainer.ValueType.String)
                         {
-                            throw InvalidTemplateException.BuildInvalidTemplateException(ActionName, "endsWidth", "");
+                            throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "endsWidth", "");
                         }
                     }
 
@@ -165,7 +165,7 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                     if (value1.Type() != ValueContainer.ValueType.String ||
                         value2.Type() != ValueContainer.ValueType.String)
                     {
-                        throw InvalidTemplateException.BuildInvalidTemplateException(ActionName, "startsWidth", "");
+                        throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "startsWidth", "");
                     }
 
                     return value1.GetValue<string>().StartsWith(value2.GetValue<string>());
@@ -173,7 +173,7 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                     if (value1.Type() != ValueContainer.ValueType.String ||
                         value2.Type() != ValueContainer.ValueType.String)
                     {
-                        throw InvalidTemplateException.BuildInvalidTemplateException(ActionName, "endsWidth", "");
+                        throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "endsWidth", "");
                     }
 
                     return value1.GetValue<string>().EndsWith(value2.GetValue<string>());

@@ -26,10 +26,11 @@ namespace Test
             services.AddFlowActionByApiIdAndOperationsName<TriggerActionExecutor>(TriggerActionExecutor.ApiId,
                 TriggerActionExecutor.SupportedOperations);
 
-            services.AddFlowActionByName<Second>(Second.FlowActionName);
-            services.AddFlowActionByApiIdAndOperationsName<Third>(Third.ApiId, Third.SupportedOperations);
-            services.AddFlowActionByName<Fourth>(Fourth.FlowActionName);
-            services.AddFlowActionByName<Fifth>(Fifth.FlowActionName);
+            services.AddFlowActionByName<UpdateAccountInvalidId>(UpdateAccountInvalidId.FlowActionName);
+            services.AddFlowActionByApiIdAndOperationsName<SendEmailNotification>(SendEmailNotification.ApiId, SendEmailNotification.SupportedOperations);
+            services.AddFlowActionByName<GetRecordValidId>(GetRecordValidId.FlowActionName);
+            services.AddFlowActionByName<UpdateAccountValidId>(UpdateAccountValidId.FlowActionName);
+            services.AddFlowActionByName<SendOutWarning>(SendOutWarning.FlowActionName);
 
             services.AddFlowRunner();
 
@@ -71,7 +72,7 @@ namespace Test
             }
         }
 
-        private class Second : OpenApiConnectionActionExecutorBase
+        private class UpdateAccountInvalidId : OpenApiConnectionActionExecutorBase
         {
             public const string FlowActionName = "Update_Account_-_Invalid_Id";
 
@@ -83,12 +84,12 @@ namespace Test
                     {ActionStatus = ActionStatus.Failed, ActionOutput = new ValueContainer(true)});
             }
 
-            public Second(IExpressionEngine expressionEngine) : base(expressionEngine)
+            public UpdateAccountInvalidId(IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
         }
 
-        private class Third : OpenApiConnectionActionExecutorBase
+        private class SendEmailNotification : OpenApiConnectionActionExecutorBase
         {
             public const string ApiId = "/providers/Microsoft.PowerApps/apis/shared_flowpush";
             public static readonly string[] SupportedOperations = {"SendEmailNotification"};
@@ -99,20 +100,20 @@ namespace Test
 
                 Console.WriteLine($"Email Title: {Parameters["NotificationEmailDefinition/notificationSubject"]}");
                 Console.WriteLine($"Email Content: {Parameters["NotificationEmailDefinition/notificationBody"]}");
-                
+
                 return Task.FromResult(new ActionResult {ActionOutput = new ValueContainer(true)});
             }
 
-            public Third(IExpressionEngine expressionEngine) : base(expressionEngine)
+            public SendEmailNotification(IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
         }
 
-        private class Fourth : OpenApiConnectionActionExecutorBase
+        private class GetRecordValidId : OpenApiConnectionActionExecutorBase
         {
             public const string FlowActionName = "Get_a_record_-_Valid_Id";
 
-            public Fourth(IExpressionEngine expressionEngine) : base(expressionEngine)
+            public GetRecordValidId(IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
 
@@ -127,18 +128,32 @@ namespace Test
             }
         }
 
-        private class Fifth : OpenApiConnectionActionExecutorBase
+        private class UpdateAccountValidId : OpenApiConnectionActionExecutorBase
         {
             public const string FlowActionName = "Update_Account_-_Valid_Id";
 
             public override Task<ActionResult> Execute()
             {
-                Assert.AreEqual(FlowActionName, ActionName);
+                return Task.FromResult(new ActionResult());
+            }
+
+            public UpdateAccountValidId(IExpressionEngine expressionEngine) : base(expressionEngine)
+            {
+            }
+        }
+
+        private class SendOutWarning : OpenApiConnectionActionExecutorBase
+        {
+            public const string FlowActionName = "Send_an_error_message_to_owner";
+
+            public override Task<ActionResult> Execute()
+            {
+                Assert.Fail("Action should not be triggered.");
 
                 return Task.FromResult(new ActionResult());
             }
 
-            public Fifth(IExpressionEngine expressionEngine) : base(expressionEngine)
+            public SendOutWarning(IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
         }
