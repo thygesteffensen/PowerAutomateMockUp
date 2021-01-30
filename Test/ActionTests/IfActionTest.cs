@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -18,9 +17,11 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/name']")).Returns("");
-            expressionParserMock.Setup(x => x.Parse("@null")).Returns("");
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/name']"))
+                .Returns(new ValueContainer());
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@null")).Returns(new ValueContainer());
 
             const string ifJson =
                 "{\"actions\":{}," +
@@ -43,13 +44,18 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/telephone1']")).Returns("28984323");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/fullname']")).Returns("Dwight Schrute");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/firstname']")).Returns("Dwight");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/lastname']")).Returns("Schrute");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/emailaddress1']"))
-                .Returns("dwight.schrute@dundermifflininc.com");
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/telephone1']"))
+                .Returns(new ValueContainer("28984323"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/fullname']"))
+                .Returns(new ValueContainer("Dwight Schrute"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/firstname']"))
+                .Returns(new ValueContainer("Dwight"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/lastname']"))
+                .Returns(new ValueContainer("Schrute"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/emailaddress1']"))
+                .Returns(new ValueContainer("dwight.schrute@dundermifflininc.com"));
 
             const string ifJson =
                 "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
@@ -78,7 +84,8 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
 
             const string ifJson =
                 "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
@@ -101,13 +108,18 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/telephone1']")).Returns("28984323");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/fullname']")).Returns("Dwight Schrute");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/firstname']")).Returns("Dwight");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/lastname']")).Returns("Schrute");
-            expressionParserMock.Setup(x => x.Parse("@triggerOutputs()?['body/emailaddress1']"))
-                .Returns("dwight.schrute@dundermifflininc.com");
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/telephone1']"))
+                .Returns(new ValueContainer("28984323"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/fullname']"))
+                .Returns(new ValueContainer("Dwight Schrute"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/firstname']"))
+                .Returns(new ValueContainer("Dwight"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/lastname']"))
+                .Returns(new ValueContainer("Schrute"));
+            expressionParserMock.Setup(x => x.ParseToValueContainer("@triggerOutputs()?['body/emailaddress1']"))
+                .Returns(new ValueContainer("dwight.schrute@dundermifflininc.com"));
 
 
             const string ifJson =
@@ -136,7 +148,8 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s, true));
 
             const string ifJson =
                 "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
@@ -159,13 +172,14 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s, true));
 
             const string ifJson =
                 "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
                 "\"runAfter\":{\"Status_Reason_-_Failed\":[\"Succeeded\"]}," +
                 "\"else\":{\"actions\":{\"TerminateFalse\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}}," +
-                "\"expression\":{\"and\":[{\"greaterOrEqual\":[12,12]},{\"greaterOrEqual\":[14,12]},{\"not\":{\"greaterOrEqual\":[10,12]},}]},\"type\":\"If\"}";
+                "\"expression\":{\"and\":[{\"greaterOrEquals\":[12,12]},{\"greaterOrEquals\":[14,12]},{\"not\":{\"greaterOrEquals\":[10,12]},}]},\"type\":\"If\"}";
 
             var ifAction = new IfActionExecutor(expressionParserMock.Object, log);
             ifAction.InitializeActionExecutor("IfActionTest", JToken.Parse(ifJson));
@@ -173,7 +187,7 @@ namespace Test.ActionTests
             var result = await ifAction.Execute();
 
             Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
-            Assert.AreEqual("TerminateFalse", result.NextAction);
+            Assert.AreEqual("TerminateTrue", result.NextAction);
         }
 
         [Test]
@@ -182,7 +196,8 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s, true));
 
             const string ifJson =
                 "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
@@ -205,10 +220,14 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s, true));
 
             const string ifJson =
-                "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}},\"runAfter\":{\"Status_Reason_-_Failed\":[\"Succeeded\"]},\"else\":{\"actions\":{\"TerminateFalse\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}},\"expression\":{\"and\":[{\"lessOrEquals\":[10,10]},{\"lessOrEquals\":[10,12]},{\"not\":{\"lessOrEquals\":[10,8]},}]},\"type\":\"If\"}";
+                "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
+                "\"runAfter\":{\"Status_Reason_-_Failed\":[\"Succeeded\"]}," +
+                "\"else\":{\"actions\":{\"TerminateFalse\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}}," +
+                "\"expression\":{\"and\":[{\"lessOrEquals\":[10,10]},{\"lessOrEquals\":[10,12]},{\"not\":{\"lessOrEquals\":[10,8]},}]},\"type\":\"If\"}";
 
             var ifAction = new IfActionExecutor(expressionParserMock.Object, log);
             ifAction.InitializeActionExecutor("IfActionTest", JToken.Parse(ifJson));
@@ -225,7 +244,8 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
 
             const string ifJson =
                 "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
@@ -248,7 +268,8 @@ namespace Test.ActionTests
             var expressionParserMock = new Mock<IExpressionEngine>();
             var log = TestLogger.Create<IfActionExecutor>();
 
-            expressionParserMock.Setup(x => x.Parse(It.IsAny<string>())).Returns((string s) => s);
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
 
             const string ifJson =
                 "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
@@ -263,6 +284,52 @@ namespace Test.ActionTests
 
             Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
             Assert.AreEqual("TerminateTrue", result.NextAction);
+        }
+        
+        [Test]
+        public async Task NoElseTest()
+        {
+            var expressionParserMock = new Mock<IExpressionEngine>();
+            var log = TestLogger.Create<IfActionExecutor>();
+
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
+
+            const string ifJson =
+                "{\"actions\":{\"TerminateTrue\":{\"runAfter\":{},\"type\":\"Terminate\",\"inputs\":{\"runStatus\":\"Succeeded\"}}}," +
+                "\"runAfter\":{\"Status_Reason_-_Failed\":[\"Succeeded\"]}," +
+                "\"expression\":{\"and\":[{\"endsWith\":[\"Jane Doe\",\"Nope\"]},{\"not\":{\"endsWith\":[\"John Doe\",\"John\"]},}]},\"type\":\"If\"}";
+
+            var ifAction = new IfActionExecutor(expressionParserMock.Object, log);
+            ifAction.InitializeActionExecutor("IfActionTest", JToken.Parse(ifJson));
+
+            var result = await ifAction.Execute();
+
+            Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
+            Assert.AreEqual(null, result.NextAction);
+        }
+        
+        [Test]
+        public async Task EmptyActionTest()
+        {
+            var expressionParserMock = new Mock<IExpressionEngine>();
+            var log = TestLogger.Create<IfActionExecutor>();
+
+            expressionParserMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns((string s) => new ValueContainer(s));
+
+            const string ifJson =
+                "{\"actions\":{}," +
+                "\"runAfter\":{\"Status_Reason_-_Failed\":[\"Succeeded\"]}," +
+                "\"expression\":{\"and\":[{\"endsWith\":[\"Jane Doe\",\"Doe\"]},{\"not\":{\"endsWith\":[\"John Doe\",\"John\"]},}]},\"type\":\"If\"}";
+
+            var ifAction = new IfActionExecutor(expressionParserMock.Object, log);
+            ifAction.InitializeActionExecutor("IfActionTest", JToken.Parse(ifJson));
+
+            var result = await ifAction.Execute();
+
+            Assert.AreEqual(ActionStatus.Succeeded, result.ActionStatus);
+            Assert.AreEqual(null, result.NextAction);
         }
     }
 }

@@ -23,8 +23,6 @@ namespace Test
 
             var services = new ServiceCollection();
 
-            services.Configure<FlowSettings>(x => { });
-
             services.AddFlowActionByApiIdAndOperationsName<Trigger>(Trigger.ApiId,
                 Trigger.SupportedOperations);
 
@@ -33,7 +31,7 @@ namespace Test
             services.AddFlowRunner();
 
             var sp = services.BuildServiceProvider();
-            var flowRunner = sp.GetRequiredService<FlowRunner>();
+            var flowRunner = sp.GetRequiredService<IFlowRunner>();
 
             flowRunner.InitializeFlowRunner(path);
 

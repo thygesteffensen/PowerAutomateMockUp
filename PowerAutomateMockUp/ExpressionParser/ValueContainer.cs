@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Parser.ExpressionParser
 {
     [JsonConverter(typeof(ValueContainerConverter))]
-    public class ValueContainer
+    public class ValueContainer : IComparable, IEquatable<ValueContainer>
     {
         private readonly dynamic _value;
         private readonly ValueType _type;
@@ -58,6 +58,12 @@ namespace Parser.ExpressionParser
         }
 
         public ValueContainer(float floatValue)
+        {
+            _value = floatValue;
+            _type = ValueType.Float;
+        }
+
+        public ValueContainer(double floatValue)
         {
             _value = floatValue;
             _type = ValueType.Float;
@@ -211,12 +217,13 @@ namespace Parser.ExpressionParser
             {
                 return GetValue<Dictionary<string, ValueContainer>>();
             }
+
             throw new PowerAutomateMockUpException("Can't get none object value container as dict.");
         }
 
         private ValueContainer JsonToValueContainer(JToken json)
         {
-            if (json.GetType() == typeof(JObject))
+            if (json is JObject jObject)
             {
                 var dictionary = json.ToDictionary(pair => ((JProperty) pair).Name, token =>
                 {
@@ -236,7 +243,47 @@ namespace Parser.ExpressionParser
                 return new ValueContainer(dictionary);
             }
 
+            if (json is JArray jArray)
+            {
+                return jArray.Count > 0 ? new ValueContainer() : JArrayToValueContainer(jArray);
+            }
+
             throw new Exception();
+        }
+
+        private ValueContainer JArrayToValueContainer(JArray json)
+        {
+            var list = new List<ValueContainer>();
+
+            foreach (var jToken in json)
+            {
+                if (jToken.GetType() != typeof(JValue))
+                {
+                    throw new PowerAutomateMockUpException("Json can only contain arrays of primitive types.");
+                }
+
+                var t = (JValue) jToken;
+                switch (t.Value)
+                {
+                    case int i:
+                        list.Add(new ValueContainer(i));
+                        break;
+                    case string s:
+                        list.Add(new ValueContainer(s));
+                        break;
+                    case bool b:
+                        list.Add(new ValueContainer(b));
+                        break;
+                    case double d:
+                        list.Add(new ValueContainer(d));
+                        break;
+                    default:
+                        throw new PowerAutomateMockUpException(
+                            $"Type {t.Value.GetType()} is not recognized when converting Json to ValueContainer.");
+                }
+            }
+
+            return new ValueContainer(list);
         }
 
 
@@ -254,7 +301,7 @@ namespace Parser.ExpressionParser
                 ValueType.String => _value,
                 ValueType.Object => "{" + string.Join(",", GetValue<Dictionary<string, ValueContainer>>()
                     .Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}",
-                ValueType.Array => "[" + string.Join(", ", GetValue<ValueContainer[]>().ToList()) + "]",
+                ValueType.Array => "[" + string.Join(", ", GetValue<IEnumerable<ValueContainer>>().ToList()) + "]",
                 ValueType.Null => "<null>",
                 _ => throw new ArgumentOutOfRangeException()
             };
@@ -263,6 +310,102 @@ namespace Parser.ExpressionParser
         public bool IsNull()
         {
             return _type == ValueType.Null;
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj == null || obj.GetType() != GetType())
+                throw new InvalidOperationException("Cannot compare these two...");
+
+            var other = (ValueContainer) obj;
+            if (other.Type() != _type)
+            {
+                // TODO: Fix comparison
+
+                throw new InvalidOperationException("Cannot compare two different ValueContainers");
+            }
+            else
+            {
+                switch (_value)
+                {
+                    case bool b:
+                        return b.CompareTo(other._value);
+                    case int i:
+                        return i.CompareTo(other._value);
+                    case float f:
+                        return f.CompareTo(other._value);
+                    case double f:
+                        return f.CompareTo(other._value);
+                    case decimal f:
+                        return f.CompareTo(other._value);
+                    case string s:
+                        return s.CompareTo(other._value);
+                    case Dictionary<string, ValueContainer> d:
+                        var d2 = (Dictionary<string, ValueContainer>) other._value;
+                        return d.Count - d2.Count;
+                    case IEnumerable<ValueContainer> l:
+                        var l2 = (IEnumerable<ValueContainer>) other._value;
+                        return l.Count() - l2.Count();
+                    default:
+                        return -1;
+                }
+            }
+        }
+
+        public bool Equals(ValueContainer other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            switch (_type)
+            {
+                case ValueType.Array when other._type == ValueType.Array:
+                {
+                    var thisArray = (IEnumerable<ValueContainer>) _value;
+                    var otherArray = other.GetValue<IEnumerable<ValueContainer>>();
+
+                    return thisArray.SequenceEqual(otherArray);
+                }
+                case ValueType.Object when other._type == ValueType.Object:
+                {
+                    var thisDict = (Dictionary<string, ValueContainer>) _value;
+                    var otherDict = other.GetValue<Dictionary<string, ValueContainer>>();
+
+                    return thisDict.Count == otherDict.Count && !thisDict.Except(otherDict).Any();
+                }
+                default:
+                    return Equals(_value, other._value) && _type == other._type;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == GetType() && Equals((ValueContainer) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return new {_type, _value}.GetHashCode();
+        }
+    }
+
+    public class ValueContainerComparer : EqualityComparer<ValueContainer>
+    {
+        public override bool Equals(ValueContainer x, ValueContainer y)
+        {
+            if (x == null || y == null)
+            {
+                return x == null && y == null;
+            }
+
+            return x.Equals(y);
+        }
+
+        public override int GetHashCode(ValueContainer obj)
+        {
+            return obj.GetHashCode();
         }
     }
 

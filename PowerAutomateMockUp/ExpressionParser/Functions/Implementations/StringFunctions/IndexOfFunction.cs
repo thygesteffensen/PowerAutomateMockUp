@@ -1,12 +1,12 @@
-﻿using System.Linq;
+﻿using System;
 using Parser.ExpressionParser.Functions.Base;
 using Parser.ExpressionParser.Functions.CustomException;
 
-namespace Parser.ExpressionParser.Functions.Implementations
+namespace Parser.ExpressionParser.Functions.Implementations.StringFunctions
 {
-    public class ConcatFunction : Function
+    public class IndexOfFunction : Function
     {
-        public ConcatFunction() : base("concat")
+        public IndexOfFunction() : base("indexOf")
         {
         }
 
@@ -17,7 +17,8 @@ namespace Parser.ExpressionParser.Functions.Implementations
                 throw new ArgumentError("Too few arguments");
             }
 
-            return new ValueContainer(parameters.Aggregate("", (current, value) => current + value.GetValue<string>()));
+            return new ValueContainer(AuxiliaryMethods.VcIsString(parameters[0])
+                .IndexOf(AuxiliaryMethods.VcIsString(parameters[1]), StringComparison.OrdinalIgnoreCase));
         }
     }
 }

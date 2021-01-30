@@ -38,15 +38,16 @@ Their JSON definition can be found [here](https://docs.microsoft.com/en-us/azure
 <expression>	        ::= "@" <method>
 <enclosedExpression>	::= "@{" <method> "}"
 
-<method>                ::= <function> *<indices>
+<method>                ::= <function> *<operators>
 
 <function>      	    ::= <string> "(" [ <arguments> ] ")"
 <arguments>             ::= <argument> *("," <argument>)
 <argument>	            ::= <method> | <string>
 
-<indices>	            ::= *( [ <nullconditional> ] "[" <index> "]")
+<operators>	            ::= *( [ <nullconditional> ] "[" <index> "]") | <dot>
 <nullconditional>       ::= "?"
 <index>                 ::= <int> | <string> | <method>
+<dot>                   ::= "." <string>
 ```
 
 `string` contains a valid string including characters according to Azure Workflow definition language.

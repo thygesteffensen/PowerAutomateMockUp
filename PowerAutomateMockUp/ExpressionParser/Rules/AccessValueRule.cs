@@ -25,8 +25,9 @@ namespace Parser.ExpressionParser.Rules
                 {
                     var indexes = index.GetValue<string>().Split('/');
 
-                    tempIndexRules.Add(new IndexRule(new ConstantRule(new ValueContainer(indexes.First())), nullConditional));
-                    
+                    tempIndexRules.Add(new IndexRule(new ConstantRule(new ValueContainer(indexes.First())),
+                        nullConditional));
+
                     foreach (var accessor in indexes.Skip(1))
                     {
                         tempIndexRules.Add(new IndexRule(new ConstantRule(new ValueContainer(accessor)), false));
@@ -56,7 +57,7 @@ namespace Parser.ExpressionParser.Rules
                     var asArray = currentValue.GetValue<ValueContainer[]>();
                     if (index.Type() != ValueContainer.ValueType.Integer)
                     {
-                        throw InvalidTemplateException.BuildInvalidTemplateException(
+                        throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(
                             (_func as ExpressionRule)?.FunctionName,
                             _func.PrettyPrint() + string.Join(", ", _indexRules.Select(x => x.PrettyPrint())),
                             index.GetValue<string>());
@@ -87,10 +88,11 @@ namespace Parser.ExpressionParser.Rules
                         return new ValueContainer();
                     }
 
-                    throw InvalidTemplateException.BuildInvalidTemplateException(
+                    throw InvalidTemplateException.BuildInvalidTemplateExceptionObject(
                         (_func as ExpressionRule)?.FunctionName,
                         _func.PrettyPrint() + string.Join(", ", _indexRules.Select(x => x.PrettyPrint())),
-                        index.GetValue<string>());
+                        index.GetValue<string>(),
+                        asObject.Keys.ToArray());
                 }
             }
 

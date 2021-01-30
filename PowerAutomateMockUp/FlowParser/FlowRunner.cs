@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -11,25 +12,34 @@ using Parser.FlowParser.ActionExecutors;
 
 namespace Parser.FlowParser
 {
-    public class FlowRunner
+    public interface IFlowRunner
+    {
+        void InitializeFlowRunner(in string path);
+        Task Trigger();
+    }
+
+    public class FlowRunner : IFlowRunner
     {
         private readonly IState _state;
         private readonly FlowSettings _flowRunnerSettings;
-        private readonly ScopeDepthManager _scopeManager;
-        private readonly ActionExecutorFactory _actionExecutorFactory;
+        private readonly IScopeDepthManager _scopeManager;
+        private readonly IActionExecutorFactory _actionExecutorFactory;
+        private readonly ILogger<FlowRunner> _logger;
         private JProperty _trigger;
 
         public FlowRunner(
             IState state,
-            ScopeDepthManager scopeDepthManager,
+            IScopeDepthManager scopeDepthManager,
             IOptions<FlowSettings> flowRunnerSettings,
-            ActionExecutorFactory actionExecutorFactory)
+            IActionExecutorFactory actionExecutorFactory,
+            ILogger<FlowRunner> logger)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
             _scopeManager = scopeDepthManager;
             _flowRunnerSettings = flowRunnerSettings?.Value;
             _actionExecutorFactory =
                 actionExecutorFactory ?? throw new ArgumentNullException(nameof(actionExecutorFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public void InitializeFlowRunner(in string path)
@@ -43,21 +53,17 @@ namespace Parser.FlowParser
             _scopeManager.Push("root", flowDefinition.SelectToken("$.actions").OfType<JProperty>(), null);
         }
 
-        public async Task<object> Trigger(ValueContainer triggerOutputs)
-        {
-            _state.AddTriggerOutputs(triggerOutputs);
-            // TODO: A option to handle action while execution
-            await RunFlow();
-
-            return null;
-        }
-
         public async Task Trigger()
         {
             var trigger = GetActionExecutor(_trigger);
 
             trigger.InitializeActionExecutor(_trigger.Name, _trigger.Value);
-            await trigger.Execute();
+            var triggerResult = await trigger.Execute();
+
+            if (triggerResult.ActionOutput != null)
+            {
+                _state.AddTriggerOutputs(triggerResult.ActionOutput);
+            }
 
             await RunFlow();
         }
@@ -81,18 +87,17 @@ namespace Parser.FlowParser
                 var actionExecutor = GetActionExecutor(currentAd);
 
                 var actionResult = await ExecuteAction(actionExecutor, currentAd);
-                if (!actionResult.ContinueExecution)
+                if (!(actionResult?.ContinueExecution ?? true))
                 {
                     break;
                 }
 
                 // If an action failes inside a scope, and a suitable action isn't found inside the given scope, that 
                 // actions status is transferred to be the scope status. This isn't the case atm
-                
-                // TODO: Figure out how to get actionResult from
+
                 var actionDescName = currentAd.Name;
-                var nextAction = actionResult.NextAction;
-                var actionResultStatus = actionResult.ActionStatus;
+                var nextAction = actionResult?.NextAction;
+                var actionResultStatus = actionResult?.ActionStatus ?? ActionStatus.Succeeded;
                 while (!DetermineNextAction(nextAction, actionResultStatus, out currentAd, actionDescName))
                 {
                     nextAction = null;
@@ -105,6 +110,15 @@ namespace Parser.FlowParser
 
                     actionResultStatus = t.ActionStatus;
                     actionDescName = t.NextAction;
+                }
+
+                if (currentAd == null && actionResultStatus == ActionStatus.Failed)
+                {
+                    _logger.LogError(
+                        "No succeeding action found after last action had status: Failed. Throwing error.");
+                    throw actionResult?.ActionExecutorException ??
+                          new PowerAutomateMockUpException(
+                              $"No exception recorded - {actionExecutor.ActionName} ended with status: Failed.");
                 }
             }
         }
@@ -122,19 +136,26 @@ namespace Parser.FlowParser
             else
             {
                 currentActionDesc =
-                    _scopeManager.CurrentActionDescriptions.First(a => a.Name == nextAction);
+                    _scopeManager.CurrentActionDescriptions.FirstOrDefault(a => a.Name == nextAction);
             }
 
             return currentActionDesc != null;
         }
 
-        private static async Task<ActionResult> ExecuteAction(ActionExecutorBase actionExecutor,
+        private async Task<ActionResult> ExecuteAction(ActionExecutorBase actionExecutor,
             JProperty currentAction)
         {
             if (actionExecutor == null) return null;
 
             actionExecutor.InitializeActionExecutor(currentAction.Name, currentAction.First);
-            return await actionExecutor.Execute();
+            var executionResult = await actionExecutor.Execute();
+
+            if (executionResult.ActionOutput != null)
+            {
+                _state.AddOutputs(actionExecutor.ActionName, executionResult.ActionOutput);
+            }
+
+            return executionResult;
         }
 
         private ActionExecutorBase GetActionExecutor(JProperty currentAction)

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Parser.ExpressionParser;
+using Parser.ExpressionParser.Functions.CustomException;
 
 namespace Parser.FlowParser.ActionExecutors.Implementations
 {
@@ -29,30 +31,30 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
             var type = expression.Properties().ToList()[0].Name;
             var result = ParseGroup(expression, type);
-            
+
             _logger.LogInformation($"Condition action '{ActionName}' evaluated {result}.");
 
             if (result)
             {
                 var actions = Json.SelectToken("$.actions");
-                if (actions.HasValues)
+                if (actions?.HasValues ?? false)
                 {
                     return Task.FromResult(
                         new ActionResult
                         {
-                            NextAction = ((JProperty) actions.First).Name
+                            NextAction = ((JProperty) actions.First)?.Name
                         });
                 }
             }
             else
             {
                 var elseActions = Json.SelectToken("$.else.actions");
-                if (elseActions.HasValues)
+                if (elseActions?.HasValues ?? false)
                 {
                     return Task.FromResult(
                         new ActionResult
                         {
-                            NextAction = ((JProperty) elseActions.First).Name
+                            NextAction = ((JProperty) elseActions.First)?.Name
                         });
                 }
             }
@@ -112,45 +114,84 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
             var conditionValues = (JArray) statement.First;
 
-            var firstConditionValue = _expressionEngine.Parse(conditionValues[0].Value<string>());
-            var secondConditionValue = _expressionEngine.Parse(conditionValues[1].Value<string>());
+            var firstConditionValue = _expressionEngine.ParseToValueContainer(conditionValues[0].Value<string>());
+            var secondConditionValue = _expressionEngine.ParseToValueContainer(conditionValues[1].Value<string>());
 
             var conditionResult = EvaluateCondition(conditionType, firstConditionValue, secondConditionValue);
 
             return isNot ? !conditionResult : conditionResult;
         }
 
-        private bool EvaluateCondition(ConditionsTypes conditionsType, string value1, string value2)
+        private bool EvaluateCondition(ConditionsTypes conditionsType, ValueContainer value1, ValueContainer value2)
         {
+            if (value1.Type() != value2.Type()) return false;
+
             switch (conditionsType)
             {
                 case ConditionsTypes.Contains:
-                    return value1.Contains(value2);
+                    if (value2.Type() != ValueContainer.ValueType.String ||
+                        value1.Type() != ValueContainer.ValueType.Array ||
+                        value1.Type() != ValueContainer.ValueType.String)
+                    {
+                        if (value1.Type() != ValueContainer.ValueType.String ||
+                            value2.Type() != ValueContainer.ValueType.String)
+                        {
+                            throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "endsWidth", "");
+                        }
+                    }
+
+                    var value = value2.GetValue<string>();
+
+                    if (value1.Type() == ValueContainer.ValueType.Array)
+                    {
+                        var collection = value1.GetValue<IEnumerable<ValueContainer>>();
+                        // if (!collection.Any())
+                        // {
+                            // return false;
+                        // }
+
+                        return (from valueContainer in collection
+                            where valueContainer.Type() == ValueContainer.ValueType.String
+                            select valueContainer.GetValue<string>()).Any(str => str.Equals(value));
+                    }
+                    else
+                    {
+                        var str = value1.GetValue<string>();
+                        return str.Contains(value);
+                    }
                 case ConditionsTypes.Equals:
-                    return value1 == value2;
+                    return value1.Equals(value2);
                 case ConditionsTypes.StartsWith:
-                    return value1.StartsWith(value2);
+                    if (value1.Type() != ValueContainer.ValueType.String ||
+                        value2.Type() != ValueContainer.ValueType.String)
+                    {
+                        throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "startsWidth", "");
+                    }
+
+                    return value1.GetValue<string>().StartsWith(value2.GetValue<string>());
                 case ConditionsTypes.EndsWith:
-                    return value1.EndsWith(value2);
+                    if (value1.Type() != ValueContainer.ValueType.String ||
+                        value2.Type() != ValueContainer.ValueType.String)
+                    {
+                        throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "endsWidth", "");
+                    }
+
+                    return value1.GetValue<string>().EndsWith(value2.GetValue<string>());
                 case ConditionsTypes.Not:
                     break;
-            }
-
-            var decimalValue1 = decimal.Parse(value1);
-            var decimalValue2 = decimal.Parse(value2);
-            switch (conditionsType)
-            {
                 case ConditionsTypes.Greater:
-                    return decimalValue1 > decimalValue2;
+                    return value1.CompareTo(value2) > 0;
                 case ConditionsTypes.GreaterOrEquals:
-                    return decimalValue1 >= decimalValue2;
+                    return value1.CompareTo(value2) >= 0;
                 case ConditionsTypes.Less:
-                    return decimalValue1 < decimalValue2;
+                    return value1.CompareTo(value2) < 0;
                 case ConditionsTypes.LessOrEquals:
-                    return decimalValue1 <= decimalValue2;
+                    return value1.CompareTo(value2) <= 0;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(conditionsType), conditionsType, null);
             }
+
+            return false;
         }
 
         private enum ConditionsTypes

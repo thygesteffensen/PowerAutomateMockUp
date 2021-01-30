@@ -49,8 +49,6 @@ var path = "<path to flow definition>";
 // from Microsoft.Extensions.DependencyInjection
 var services = new ServiceCollection();
 
-services.Configure<FlowSettings>(x => { });
-
 // Required to set up required dependencies
 services.AddFlowRunner(); 
 
@@ -65,8 +63,20 @@ await flowRunner.Trigger();
 // Your flow have now ran
 ```
 
+### Configuration
+This is optional and the settings class has the default values mentioned below.
+
+The settings object is configured this way:
+```cs
+services.Configure<FlowSettings>(x => { }); // Optional way to add settings
+```
+The possbile values to set is:
+
+ * `x.FailOnUnknownAction` (default: `true`): If an action cannot be found and exception is thrown. This can be avoid and the action is ignored and the status is assumed to be `Succeeded`.
+ * `x.IgnoreActions` (default: `empty`): List of action names which are ignored during exectuion, the action is not executed and the status is assumed to be `Succeeded`.
+
 ### Adding actions
-Actions can added in three ways
+Actions can be added in three ways
 
 1. Using specific action name
 2. Using Connection ApiId and supported OperationIds
@@ -77,7 +87,7 @@ Actions can added in three ways
 services.AddFlowActionByName<GetMsnWeather>("Get_forecast_for_today_(Metric)");
 ```
 
-When the action named *Get_forecast_for_today_(Metric)* is reached and about to be executed, the class with type GetMsnWeather is retrieved from the ServiceProvider and called.
+When the action named *Get_forecast_for_today_(Metric)* is reached and about to be executed, the class with type GetMsnWeather is retrieved from the ServiceProvider and used to execute the action.
 
 #### 2. Using Connection ApiId and supported OperationIds
 ```c#
@@ -87,37 +97,58 @@ services.AddFlowActionByApiIdAndOperationsName<Notification>(
     new []{ "SendEmailNotification", "SendNotification" });
 ```
 
-When an action from the **Notification** connector with one of the supported types is reached in the flow, a action executor instance of type Notification is created and used.
+When an action from the **Notification** connector with one of the supported types is reached in the flow, a action executor instance of type `Notification` is created and used to execute the action.
 
 #### 3. Using Action type (**Not recommended**)
 ```c#
 services.AddFlowActionByFlowType<IfActionExecutor>("If");
 ```
-When the generic action type **If** i reached, a action executor instance of type Notification is created and used.
+When the generic action type **If** i reached, an action executor instance of type `IfActionExecutor` is created and used to execute the action.
 
-This is not recommended due to the fact that every OpenApiConnection connector will have the type OpenApiConnection. This means that both Common Data Service (current environment) and many others, will use the same action executors, which is not the correct way to do it.
+This is not recommended due to the fact that every OpenApiConnection connector will have the type **OpenApiConnection**. This means that both Common Data Service (current environment) and many others, will use the same action executors, which is not the correct way to do it.
+
+This way of resolving an action executor is only used to resolve actions, where only one Action uses that type. This is **If**, **DoUntil** etc.
 
 ### Creating action executors.
-Currently there are two classes to extend, the one is **DefaultBaseActionExecutor** and the other are **OpenApiConnectionBaseActionExecutor**.
+Currently there are two classes to extend, one is **DefaultBaseActionExecutor** and the other is **OpenApiConnectionBaseActionExecutor**.
 
 #### DefaultBaseActionExecutor
 ```c#
 private class ActionExecutor : DefaultBaseActionExecutor
 {
-    private readonly IState _state;
+    private readonly IExpressionEngine _expression;
 
     // Using dependency injection to get dependencies
-    public TriggerActionExecutor(IState state)
+    public TriggerActionExecutor(IExpressionEngine expression)
     {
-        _state = state ?? throw new ArgumentNullException(nameof(state));
+        _expression = expression ?? throw new ArgumentNullException(nameof(expression));
     }
 
     public override Task<ActionResult> Execute()
     {
-        // ... Execute action functionality
+        var result = new ActionResult();
 
-        return Task.FromResult(
-            new ActionResult {ActionStatus = ActionStatus.Succeeded});
+        try
+        {
+            // Some dangerous operation
+            // ...
+
+            result.ActionOutput = new ValueContainer(new Dictionary<string, ValueContainer>()
+            {
+                {"Key", new ValueContainer("Value")}
+            });
+            // Corresponds to: outputs('<action>').Key || outputs('<action>')['Key']
+
+            result.ActionStatus = ActionStatus.Succeeded;
+        } 
+        catch(EvenMoreDangerousException exp)
+        {
+            // PAMU handles the exceptions...
+            result.ActionStatus = ActionStatus.Failed;
+            result.ActionExecutorException = exp;
+        }
+
+        return Task.FromResult(result);
     }
 }
 ```
@@ -139,8 +170,7 @@ private class ActionExecutor : OpenApiConnectionActionExecutorBase
 
         var entityName = parameters["string"].GetValue<string>();
 
-        return Task.FromResult(
-            new ActionResult {ActionStatus = ActionStatus.Failed});
+        // ...
     }
 }
 ```
