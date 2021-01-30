@@ -9,8 +9,8 @@
     <a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
         <img alt="Nuget version" src="https://img.shields.io/nuget/v/PowerAutomateMockUp">
     </a>
-    <!--<a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
-        <img alt="Nuget prerelease version" src="https://img.shields.io/nuget/vpre/PowerAutomateMockUp">-->
+    <a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
+        <img alt="Nuget prerelease version" src="https://img.shields.io/nuget/vpre/PowerAutomateMockUp">
     </a>
 </p>
 <p align="center">
