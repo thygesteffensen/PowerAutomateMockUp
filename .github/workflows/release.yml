@@ -55,7 +55,7 @@ jobs:
           GIT_AUTHOR_NAME: thygesteffensen
           GIT_AUTHOR_EMAIL: 31892312+thygesteffensen@users.noreply.github.com
         run: |
-          echo "RELEASE_VERSION=$((npx semantic-release --dry-run).Where({ $_ -like '*Release note*' }) | Out-String | Select-String '[0-9]+\.[0-9]+\.[0-9]+([-][a-zA-z]+[.][0-9]*)' | % { $_.Matches } | % { $_.Value })" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "RELEASE_VERSION=$((npx semantic-release --dry-run).Where({ $_ -like '*Release note*' }) | Out-String | Select-String '[0-9]+\.[0-9]+\.[0-9]+([-][a-zA-z]+[.][0-9]*)?' | % { $_.Matches } | % { $_.Value })" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Print release verison
         run: echo ${env:RELEASE_VERSION}
