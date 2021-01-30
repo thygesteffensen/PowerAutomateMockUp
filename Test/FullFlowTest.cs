@@ -27,7 +27,8 @@ namespace Test
                 TriggerActionExecutor.SupportedOperations);
 
             services.AddFlowActionByName<UpdateAccountInvalidId>(UpdateAccountInvalidId.FlowActionName);
-            services.AddFlowActionByApiIdAndOperationsName<SendEmailNotification>(SendEmailNotification.ApiId, SendEmailNotification.SupportedOperations);
+            services.AddFlowActionByApiIdAndOperationsName<SendEmailNotification>(SendEmailNotification.ApiId,
+                SendEmailNotification.SupportedOperations);
             services.AddFlowActionByName<GetRecordValidId>(GetRecordValidId.FlowActionName);
             services.AddFlowActionByName<UpdateAccountValidId>(UpdateAccountValidId.FlowActionName);
             services.AddFlowActionByName<SendOutWarning>(SendOutWarning.FlowActionName);
@@ -72,19 +73,23 @@ namespace Test
             }
         }
 
-        private class UpdateAccountInvalidId : OpenApiConnectionActionExecutorBase
+        private class UpdateAccountInvalidId : 
+            OpenApiConnectionActionExecutorBase
         {
-            public const string FlowActionName = "Update_Account_-_Invalid_Id";
+            public const string FlowActionName = 
+                "Update_Account_-_Invalid_Id";
 
             public override Task<ActionResult> Execute()
             {
                 Assert.AreEqual(FlowActionName, ActionName);
 
                 return Task.FromResult(new ActionResult
-                    {ActionStatus = ActionStatus.Failed, ActionOutput = new ValueContainer(true)});
+                    {ActionStatus = ActionStatus.Failed, 
+                        ActionOutput = new ValueContainer(true)});
             }
 
-            public UpdateAccountInvalidId(IExpressionEngine expressionEngine) : base(expressionEngine)
+            public UpdateAccountInvalidId(
+                IExpressionEngine expressionEngine) : base(expressionEngine)
             {
             }
         }
@@ -142,9 +147,11 @@ namespace Test
             }
         }
 
-        private class SendOutWarning : OpenApiConnectionActionExecutorBase
+        private class SendOutWarning :
+            OpenApiConnectionActionExecutorBase
         {
-            public const string FlowActionName = "Send_an_error_message_to_owner";
+            public const string FlowActionName =
+                "Send_an_error_message_to_owner";
 
             public override Task<ActionResult> Execute()
             {
@@ -153,7 +160,8 @@ namespace Test
                 return Task.FromResult(new ActionResult());
             }
 
-            public SendOutWarning(IExpressionEngine expressionEngine) : base(expressionEngine)
+            public SendOutWarning(IExpressionEngine expressionEngine) :
+                base(expressionEngine)
             {
             }
         }
