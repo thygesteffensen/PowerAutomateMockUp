@@ -39,14 +39,14 @@ jobs:
         run: npm install @semantic-release/exec -D
         working-directory: ./.github/workflows
 
-  - name: Dry Run Semantic to get next Version nummber
-      working-directory: ./.github/workflows
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        GIT_AUTHOR_NAME: thygesteffensen
-        GIT_AUTHOR_EMAIL: 31892312+thygesteffensen@users.noreply.github.com
-      run: |
-        npx semantic-release --dry-run
+      - name: Dry Run Semantic to get next Version nummber
+        working-directory: ./.github/workflows
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GIT_AUTHOR_NAME: thygesteffensen
+          GIT_AUTHOR_EMAIL: 31892312+thygesteffensen@users.noreply.github.com
+        run: |
+          npx semantic-release --dry-run
 
       - name: Dry Run Semantic to get next Version nummber
         working-directory: ./.github/workflows
