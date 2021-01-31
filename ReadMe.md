@@ -1,8 +1,8 @@
-<h1 align="center">PowerAutomateMockUp</h1>
-<h3 align="center">Skeleton to run Power Automate Flows from Json Flow definition.</h3>
+<h1 align="center">Power Automate Mock-Up</h1>
+<h3 align="center">Skeleton to run Power Automate flows from JSON flow definition.</h3>
 <p align="center">
-    <!--<img alt="Build status" src="https://img.shields.io/github/workflow/status/thygesteffensen/PowerAutomateMockUp/Build/main">-->
-        <img alt="Build status" src="https://img.shields.io/github/workflow/status/thygesteffensen/PowerAutomateMockUp/Build/dev">
+    <img alt="Build status" src="https://img.shields.io/github/workflow/status/thygesteffensen/PowerAutomateMockUp/Release/main?label=main">
+        <img alt="Build status" src="https://img.shields.io/github/workflow/status/thygesteffensen/PowerAutomateMockUp/Build/dev?label=dev">
     <a href="https://www.nuget.org/packages/PowerAutomateMockUp/">
         <img alt="Nuget downloads" src="https://img.shields.io/nuget/dt/PowerAutomateMockUp">
     </a>
@@ -13,15 +13,15 @@
         <img alt="Nuget prerelease version" src="https://img.shields.io/nuget/vpre/PowerAutomateMockUp">
     </a>
 </p>
-<p align="center">
+<!-- <p align="center">
     <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Index">Home</a>
     |
     <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/GettingStarted">Getting Started</a>
     |
     <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Technical">Technical</a>
-</p>
+</p> -->
 
-Currently there is not a way to unit test Power Automate flows. You have the ability to manually run a flow with static results, but this isn't the same as a unit test. I have during my work implemented business critical functionality in Power Automate using Common Data Service (current environment) connector, whiteout being able to test it properly, when developing Flows and Plugins to Dynamics 365. 
+Currently there is not a way to unit test Power Automate flows. You have the ability to manually run a flow with static results, but this isn't the same as a unit test. I have during my work implemented business critical functionality in Power Automate using Common Data Service (current environment) connector.
 
 ## Code style
 The code is written using [Riders](https://www.jetbrains.com/help/rider/Settings_Code_Style_CSHARP.html) default C# code style.
@@ -30,7 +30,7 @@ Commits are written in [conventional commit](https://www.conventionalcommits.org
 
 ## Installation
 
-Currently the project is still in alpha. To find the packages at nuget.com, you have to check 'Prerelease', before the nuget appears.
+A the [NuGet package](https://www.nuget.org/packages/PowerAutomateMockUp/) to your project.
 
 ## Tests
 
