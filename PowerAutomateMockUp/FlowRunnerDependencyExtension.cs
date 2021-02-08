@@ -89,7 +89,7 @@ namespace Parser
             services.AddSingleton(new ActionExecutorRegistration {ActionName = actionName, Type = typeof(T)});
         }
 
-        private static void AddFlowActionByFlowType<T>(this IServiceCollection services, string actionType)
+        public static void AddFlowActionByFlowType<T>(this IServiceCollection services, string actionType)
             where T : ActionExecutorBase
         {
             services.AddTransient<T>();
