@@ -203,4 +203,4 @@ This is my bachelor project and I'm currently not accepting contributions until 
 
 ## License
 
-© Thyge Skødt Steffensen
+MIT
