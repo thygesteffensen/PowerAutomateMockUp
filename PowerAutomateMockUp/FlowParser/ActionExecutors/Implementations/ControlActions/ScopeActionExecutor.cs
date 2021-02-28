@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace Parser.FlowParser.ActionExecutors.Implementations
+namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
 {
     public class ScopeActionExecutor : DefaultBaseActionExecutor
     {
