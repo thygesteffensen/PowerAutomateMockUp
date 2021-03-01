@@ -7,5 +7,7 @@ namespace Parser.FlowParser
         public bool FailOnUnknownAction { get; set; } = true;
 
         public List<string> IgnoreActions { get; set; } = new List<string>();
+
+        public bool LogActionsStates { get; set; } = true;
     }
 }
