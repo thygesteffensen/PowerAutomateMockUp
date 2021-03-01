@@ -16,6 +16,7 @@ namespace Parser.FlowParser
     {
         void InitializeFlowRunner(in string path);
         Task Trigger();
+        Task Trigger(ValueContainer triggerOutput);
     }
 
     public class FlowRunner : IFlowRunner
@@ -64,6 +65,13 @@ namespace Parser.FlowParser
             {
                 _state.AddTriggerOutputs(triggerResult.ActionOutput);
             }
+
+            await RunFlow();
+        }
+
+        public async Task Trigger(ValueContainer triggerOutput)
+        {
+            _state.AddTriggerOutputs(triggerOutput);
 
             await RunFlow();
         }

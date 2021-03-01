@@ -59,7 +59,7 @@ namespace Parser.ExpressionParser
 
         public ValueContainer(float floatValue)
         {
-            _value = floatValue;
+            _value = Convert.ToDouble(floatValue);
             _type = ValueType.Float;
         }
 
@@ -114,8 +114,9 @@ namespace Parser.ExpressionParser
 
         public ValueContainer(JToken json)
         {
-            _type = ValueType.Object;
-            _value = JsonToValueContainer(json).GetValue<Dictionary<string, ValueContainer>>();
+            var v = JsonToValueContainer(json);
+            _type = v._type;
+            _value = v._value;
         }
 
         public ValueType Type()
@@ -223,32 +224,51 @@ namespace Parser.ExpressionParser
 
         private ValueContainer JsonToValueContainer(JToken json)
         {
-            if (json is JObject jObject)
+            switch (json)
             {
-                var dictionary = json.ToDictionary(pair => ((JProperty) pair).Name, token =>
+                case JObject jObject:
                 {
-                    if (token.Children().Count() != 1) return JsonToValueContainer(token.Children().First());
-
-                    var t = token.First;
-                    return t.Type switch
+                    var dictionary = json.ToDictionary(pair => ((JProperty) pair).Name, token =>
                     {
-                        JTokenType.String => new ValueContainer(t.Value<string>(), true),
-                        JTokenType.Boolean => new ValueContainer(t.Value<bool>()),
-                        JTokenType.Integer => new ValueContainer(t.Value<int>()),
-                        JTokenType.Float => new ValueContainer(t.Value<float>()),
-                        _ => JsonToValueContainer(token.Children().First())
+                        if (token.Children().Count() != 1) return JsonToValueContainer(token.Children().First());
+
+                        var t = token.First;
+                        return t.Type switch
+                        {
+                            JTokenType.String => new ValueContainer(t.Value<string>(), true),
+                            JTokenType.Boolean => new ValueContainer(t.Value<bool>()),
+                            JTokenType.Integer => new ValueContainer(t.Value<int>()),
+                            JTokenType.Float => new ValueContainer(t.Value<float>()),
+                            _ => JsonToValueContainer(token.Children().First())
+                        };
+                    });
+
+                    return new ValueContainer(dictionary);
+                }
+                case JArray jArray:
+                    return jArray.Count > 0 ? new ValueContainer() : JArrayToValueContainer(jArray);
+                case JValue jValue:
+                    if (jValue.HasValues)
+                    {
+                        throw new PowerAutomateMockUpException(
+                            "When parsing JToken to ValueContainer, the JToken as JValue can only contain one value.");
+                    }
+
+                    return jValue.Type switch
+                    {
+                        JTokenType.Boolean => new ValueContainer(jValue.Value<bool>()),
+                        JTokenType.Integer => new ValueContainer(jValue.Value<int>()),
+                        JTokenType.Float => new ValueContainer(jValue.Value<float>()),
+                        JTokenType.Null => new ValueContainer(),
+                        JTokenType.String => new ValueContainer(jValue.Value<string>()),
+                        JTokenType.None => new ValueContainer(),
+                        JTokenType.Guid => new ValueContainer(jValue.Value<Guid>().ToString()),
+                        _ => throw new PowerAutomateMockUpException(
+                            $"{jValue.Type} is not yet supported in ValueContainer conversion")
                     };
-                });
-
-                return new ValueContainer(dictionary);
+                default:
+                    throw new PowerAutomateMockUpException("Could not parse JToken to ValueContainer.");
             }
-
-            if (json is JArray jArray)
-            {
-                return jArray.Count > 0 ? new ValueContainer() : JArrayToValueContainer(jArray);
-            }
-
-            throw new Exception();
         }
 
         private ValueContainer JArrayToValueContainer(JArray json)
@@ -372,6 +392,19 @@ namespace Parser.ExpressionParser
                     var otherDict = other.GetValue<Dictionary<string, ValueContainer>>();
 
                     return thisDict.Count == otherDict.Count && !thisDict.Except(otherDict).Any();
+                }
+                case ValueType.Integer when other._type == ValueType.Float:
+                    var v = (double) _value;
+                    return Math.Abs(Math.Floor(v) - other._value) < double.Epsilon;
+                case ValueType.Float when other._type == ValueType.Integer:
+                {
+                    return Math.Abs(Math.Floor(_value) - other._value) < double.Epsilon;
+                }
+                case ValueType.Float:
+                {
+                    // TODO: Figure out how to handle comparison and in general how to handle float/double..
+                    // assignee: thygesteffensen
+                    return Math.Abs(_value - other._value) < 0.01;
                 }
                 default:
                     return Equals(_value, other._value) && _type == other._type;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Parser.ExpressionParser;
 
-namespace Parser.FlowParser.ActionExecutors.Implementations
+namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
 {
     public class TerminateActionExecutor : DefaultBaseActionExecutor
     {

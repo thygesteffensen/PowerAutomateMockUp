@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 using Parser.ExpressionParser;
 using Parser.ExpressionParser.Functions.CustomException;
 
-namespace Parser.FlowParser.ActionExecutors.Implementations
+namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
 {
     public class IfActionExecutor : DefaultBaseActionExecutor
     {
@@ -15,11 +15,16 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
         private const string And = "and";
         private readonly IExpressionEngine _expressionEngine;
         private readonly ILogger<IfActionExecutor> _logger;
+        private readonly IScopeDepthManager _scopeDepthManager;
 
-        public IfActionExecutor(IExpressionEngine expressionEngine, ILogger<IfActionExecutor> logger)
+        public IfActionExecutor(
+            IExpressionEngine expressionEngine,
+            ILogger<IfActionExecutor> logger,
+            IScopeDepthManager scopeDepthManager)
         {
             _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _scopeDepthManager = scopeDepthManager ?? throw new ArgumentNullException(nameof(scopeDepthManager));
         }
 
         // https://en.wikipedia.org/wiki/Short-circuit_evaluation
@@ -29,48 +34,58 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
         {
             var expression = (JObject) Json.SelectToken("$.expression");
 
+            if (expression == null)
+            {
+                throw new PowerAutomateMockUpException(
+                    $"JSON expression should not be null in if condition. Condition action name : {ActionName}.");
+            }
+
             var type = expression.Properties().ToList()[0].Name;
             var result = ParseGroup(expression, type);
 
-            _logger.LogInformation($"Condition action '{ActionName}' evaluated {result}.");
+            _logger.LogInformation("Condition action '{ActionName}' evaluated {Result}",
+                ActionName, result);
 
             if (result)
             {
                 var actions = Json.SelectToken("$.actions");
-                if (actions?.HasValues ?? false)
-                {
-                    return Task.FromResult(
-                        new ActionResult
-                        {
-                            NextAction = ((JProperty) actions.First)?.Name
-                        });
-                }
-            }
-            else
-            {
-                var elseActions = Json.SelectToken("$.else.actions");
-                if (elseActions?.HasValues ?? false)
-                {
-                    return Task.FromResult(
-                        new ActionResult
-                        {
-                            NextAction = ((JProperty) elseActions.First)?.Name
-                        });
-                }
+
+                if (!(actions?.HasValues ?? false)) return Task.FromResult(new ActionResult());
+
+                _scopeDepthManager.Push(ActionName, actions.OfType<JProperty>(), null);
+                return Task.FromResult(
+                    new ActionResult
+                    {
+                        NextAction = ((JProperty) actions.First)?.Name
+                    });
             }
 
-            return Task.FromResult(new ActionResult());
+            var elseActions = Json.SelectToken("$.else.actions");
+
+            if (!(elseActions?.HasValues ?? false)) return Task.FromResult(new ActionResult());
+
+            _scopeDepthManager.Push(ActionName, elseActions.OfType<JProperty>(), null);
+            return Task.FromResult(
+                new ActionResult
+                {
+                    NextAction = ((JProperty) elseActions.First)?.Name
+                });
         }
 
         private bool ParseGroup(JObject group, string type)
         {
-            var theType = group.Properties().First().Name;
+            var groupType = group.Properties().First().Name;
 
             var condition = false;
 
-            if (theType == Or || theType == And)
+            if (groupType == Or || groupType == And)
             {
-                var expressions = group.SelectToken($"$.{theType}");
+                var expressions = group.SelectToken($"$.{groupType}");
+                if (expressions == null)
+                {
+                    throw new PowerAutomateMockUpException("JSON expression group should exist.");
+                }
+
                 var statements = expressions.Children();
 
                 foreach (var statement in statements)
@@ -97,6 +112,11 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
         private bool EvaluateStatement(JProperty statement)
         {
+            if (statement?.First == null)
+            {
+                throw new PowerAutomateMockUpException("Cannot evaluate null statement.");
+            }
+            
             if (statement.Name == Or || statement.Name == And)
             {
                 return ParseGroup(statement.First as JObject, statement.Name);
@@ -108,22 +128,41 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
             if (conditionType == ConditionsTypes.Not)
             {
                 statement = (JProperty) statement.First.First;
+                if (statement == null)
+                {
+                    throw new PowerAutomateMockUpException("Not statement must contain new group.");
+                }
                 isNot = true;
                 Enum.TryParse(statement.Name, true, out conditionType);
             }
 
             var conditionValues = (JArray) statement.First;
+            if (conditionValues == null || conditionValues.Count < 2)
+            {
+                throw new PowerAutomateMockUpException("Condition values must cannot be null and two is expected.");
+            }
 
-            var firstConditionValue = _expressionEngine.ParseToValueContainer(conditionValues[0].Value<string>());
-            var secondConditionValue = _expressionEngine.ParseToValueContainer(conditionValues[1].Value<string>());
+            var firstConditionValue = new ValueContainer(conditionValues[0]);
+            if (firstConditionValue.Type() == ValueContainer.ValueType.String)
+            {
+                firstConditionValue = _expressionEngine.ParseToValueContainer(firstConditionValue.GetValue<string>());
+            }
+            
+            var secondConditionValue = new ValueContainer(conditionValues[1]);
+            if (secondConditionValue.Type() == ValueContainer.ValueType.String)
+            {
+                secondConditionValue = _expressionEngine.ParseToValueContainer(secondConditionValue.GetValue<string>());
+            }
 
             var conditionResult = EvaluateCondition(conditionType, firstConditionValue, secondConditionValue);
 
             return isNot ? !conditionResult : conditionResult;
         }
 
+
         private bool EvaluateCondition(ConditionsTypes conditionsType, ValueContainer value1, ValueContainer value2)
         {
+            if (IsBooleanSpecialCase(value1, value2, conditionsType, out var result)) return result;
             if (value1.Type() != value2.Type()) return false;
 
             switch (conditionsType)
@@ -136,7 +175,8 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                         if (value1.Type() != ValueContainer.ValueType.String ||
                             value2.Type() != ValueContainer.ValueType.String)
                         {
-                            throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "endsWidth", "");
+                            throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "endsWidth",
+                                "");
                         }
                     }
 
@@ -145,10 +185,6 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                     if (value1.Type() == ValueContainer.ValueType.Array)
                     {
                         var collection = value1.GetValue<IEnumerable<ValueContainer>>();
-                        // if (!collection.Any())
-                        // {
-                            // return false;
-                        // }
 
                         return (from valueContainer in collection
                             where valueContainer.Type() == ValueContainer.ValueType.String
@@ -165,7 +201,8 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
                     if (value1.Type() != ValueContainer.ValueType.String ||
                         value2.Type() != ValueContainer.ValueType.String)
                     {
-                        throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "startsWidth", "");
+                        throw InvalidTemplateException.BuildInvalidTemplateExceptionArray(ActionName, "startsWidth",
+                            "");
                     }
 
                     return value1.GetValue<string>().StartsWith(value2.GetValue<string>());
@@ -193,6 +230,39 @@ namespace Parser.FlowParser.ActionExecutors.Implementations
 
             return false;
         }
+
+        /**
+         * The expression @true or '@{true}' does not evaluate to a TRUE boolean constant, but the string 'true'.
+         * equals('true', equals(1,1)) evaluates to false...
+         *
+         * However, when equals(1,1) is used in an condition and the condition type is equals, then equals(1,1) equals
+         * 'true'.
+         * This is the only place where this behaviour have been observed. 
+         */
+        private bool IsBooleanSpecialCase(ValueContainer value1, ValueContainer value2, ConditionsTypes conditionsType,
+            out bool result)
+        {
+            result = false;
+            if (conditionsType != ConditionsTypes.Equals) return false;
+            if (value1.Type() == value2.Type()) return false;
+
+            if (!(value1.Type() == ValueContainer.ValueType.String || value1.Type() == ValueContainer.ValueType.Boolean)
+                &&
+                !(value2.Type() == ValueContainer.ValueType.String || value2.Type() == ValueContainer.ValueType.Boolean)
+            ) return false;
+
+            var b1 = value1.Type() == ValueContainer.ValueType.String
+                ? value1.GetValue<string>().Equals("true")
+                : value1.GetValue<bool>();
+
+            var b2 = value2.Type() == ValueContainer.ValueType.String
+                ? value2.GetValue<string>().Equals("true")
+                : value2.GetValue<bool>();
+
+            result = b1 == b2;
+            return true;
+        }
+
 
         private enum ConditionsTypes
         {

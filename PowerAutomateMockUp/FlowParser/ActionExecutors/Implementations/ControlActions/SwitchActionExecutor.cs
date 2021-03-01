@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Parser.ExpressionParser;
 
-namespace Parser.FlowParser.ActionExecutors.Implementations
+namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
 {
     public class SwitchActionExecutor : DefaultBaseActionExecutor
     {

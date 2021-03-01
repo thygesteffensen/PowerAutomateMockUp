@@ -1,0 +1,107 @@
+{
+  "name": "24ed5667-14a8-4965-bc0c-d73ed8408aec",
+  "id": "/providers/Microsoft.Flow/flows/24ed5667-14a8-4965-bc0c-d73ed8408aec",
+  "type": "Microsoft.Flow/flows",
+  "properties": {
+    "apiId": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+    "displayName": "Post 1 - Demonstration flow",
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "When_a_Contact_is_created_or_updated": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 4,
+              "subscriptionRequest/entityname": "contact",
+              "subscriptionRequest/scope": 4
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "Condition_-_If_the_last_name_is_empty": {
+          "actions": {
+            "Send_me_an_email_notification": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_flowpush",
+                  "operationId": "SendEmailNotification",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowpush"
+                },
+                "parameters": {
+                  "NotificationEmailDefinition/notificationSubject": "WARNING: Newly created contact does not have a last name",
+                  "NotificationEmailDefinition/notificationBody": "Contact with id @{triggerOutputs()?['body/contactid']} does not have a last name."
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Create_a_new_row_-_Create_greeting_note": {
+                "runAfter": {},
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "host": {
+                    "connectionName": "shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                  },
+                  "parameters": {
+                    "entityName": "annotations",
+                    "item/subject": "Greet our new Contact ",
+                    "item/notetext": "With the name of @{triggerOutputs()?['body/fullname']}",
+                    "item/isdocument": false
+                  },
+                  "authentication": "@parameters('$authentication')"
+                }
+              }
+            }
+          },
+          "expression": {
+            "equals": [
+              "@empty(triggerOutputs()?['body/lastname'])",
+              "@true"
+            ]
+          },
+          "type": "If"
+        }
+      },
+      "outputs": {}
+    },
+    "connectionReferences": {
+      "shared_flowpush": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_flowpush",
+        "tier": "NotSpecified"
+      },
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      }
+    },
+    "flowFailureAlertSubscribed": false
+  }
+}

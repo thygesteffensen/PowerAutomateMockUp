@@ -30,7 +30,7 @@ namespace Parser.ExpressionParser.Rules
 
                     foreach (var accessor in indexes.Skip(1))
                     {
-                        tempIndexRules.Add(new IndexRule(new ConstantRule(new ValueContainer(accessor)), false));
+                        tempIndexRules.Add(new IndexRule(new ConstantRule(new ValueContainer(accessor)), nullConditional));
                     }
                 }
                 else

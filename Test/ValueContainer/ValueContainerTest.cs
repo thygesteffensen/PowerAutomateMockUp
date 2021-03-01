@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Parser.ExpressionParser;
@@ -141,6 +140,24 @@ namespace Test
             valueContainer["body/name"] = new ValueContainer("John Doe");
 
             Assert.AreEqual("John Doe", valueContainer["body/name"].GetValue<string>());
+        }
+        
+        [Test]
+        public void TestJValueToValueContainer()
+        {
+            var expectedValue = "Value";
+            var jValue = new JValue(expectedValue);
+
+            var valueContainer = new ValueContainer(jValue);
+
+            Assert.IsNotNull(valueContainer);
+            Assert.AreEqual(ValueContainer.ValueType.String, valueContainer.Type());
+            Assert.AreEqual(expectedValue, valueContainer.GetValue<string>());
+        }
+
+        public T GetValue<T>(ValueContainer valueContainer)
+        {
+            return valueContainer.GetValue<T>();
         }
 
         [Test]

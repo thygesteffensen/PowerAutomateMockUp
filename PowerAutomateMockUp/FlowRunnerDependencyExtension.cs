@@ -1,13 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Parser.ExpressionParser;
 using Parser.ExpressionParser.Functions.Base;
 using Parser.ExpressionParser.Functions.Implementations.CollectionFunctions;
+using Parser.ExpressionParser.Functions.Implementations.ConversionFunctions;
 using Parser.ExpressionParser.Functions.Implementations.LogicalComparisonFunctions;
 using Parser.ExpressionParser.Functions.Implementations.StringFunctions;
 using Parser.ExpressionParser.Functions.Storage;
 using Parser.FlowParser;
 using Parser.FlowParser.ActionExecutors;
 using Parser.FlowParser.ActionExecutors.Implementations;
+using Parser.FlowParser.ActionExecutors.Implementations.ControlActions;
 using LengthFunction = Parser.ExpressionParser.Functions.Implementations.StringFunctions.LengthFunction;
 
 namespace Parser
@@ -31,6 +34,7 @@ namespace Parser
 
             AddStringFunctions(services);
             AddCollectionFunction(services);
+            AddConversionFunction(services);
 
             services.AddTransient<IFunction, VariablesFunction>();
             services.AddTransient<IFunction, OutputsFunction>();
@@ -82,6 +86,19 @@ namespace Parser
             services.AddTransient<IFunction, UnionFunction>();
         }
 
+        private static void AddConversionFunction(IServiceCollection services)
+        {
+            services.AddTransient<IFunction, ArrayFunction>();
+            services.AddTransient<IFunction, Base64Function>();
+            services.AddTransient<IFunction, Base64ToBinaryFunction>();
+            services.AddTransient<IFunction, Base64ToStringFunction>();
+            services.AddTransient<IFunction, BinaryFunction>();
+            services.AddTransient<IFunction, BoolFunction>();
+            services.AddTransient<IFunction, CreateArrayFunction>();
+            services.AddTransient<IFunction, DataUriFunction>();
+            services.AddTransient<IFunction, DataUriToBinaryFunction>();
+        }
+
         public static void AddFlowActionByName<T>(this IServiceCollection services, string actionName)
             where T : ActionExecutorBase
         {
@@ -89,7 +106,7 @@ namespace Parser
             services.AddSingleton(new ActionExecutorRegistration {ActionName = actionName, Type = typeof(T)});
         }
 
-        private static void AddFlowActionByFlowType<T>(this IServiceCollection services, string actionType)
+        public static void AddFlowActionByFlowType<T>(this IServiceCollection services, string actionType)
             where T : ActionExecutorBase
         {
             services.AddTransient<T>();
