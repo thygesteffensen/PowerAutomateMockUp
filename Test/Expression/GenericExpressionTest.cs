@@ -10,6 +10,8 @@ namespace Test.Expression
         [Test, TestCaseSource(typeof(StringFunctionTests), nameof(StringFunctionTests.StringFunctionTestInput))]
         [TestCaseSource(typeof(CollectionFunctionTests), nameof(CollectionFunctionTests.CollectionFunctionTestInput))]
         [TestCaseSource(typeof(LogicalFunctionTest), nameof(LogicalFunctionTest.LogicalFunctionTestInput))]
+        [TestCaseSource(typeof(ConversionFunctionTest), nameof(ConversionFunctionTest.ConversionFunctionTestInput))]
+        [TestCaseSource(typeof(MathFunctionTests), nameof(MathFunctionTests.MathFunctionTestInput))]
         public void TestFunction(Function func, string name,
             ValueContainer[] parameters, ValueContainer expected)
         {

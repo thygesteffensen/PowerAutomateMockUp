@@ -59,5 +59,15 @@ namespace Parser.ExpressionParser.Functions.CustomException
 
             return new InvalidTemplateException(msg);
         }
+
+        public static InvalidTemplateException BuildInvalidLanguageFunction(string actionName, string functionName)
+        {
+            var msg = $"InvalidTemplate. Unable to process template language expressions in action '{actionName}' inputs at " +
+                      $"line 'x' and column 'y': 'The template language function '{functionName}' expects a comma separated " +
+                      "list of parameters. The function was invoked with no parameters. " +
+                      "Please see https://aka.ms/logicexpressions#createArray for usage details.'.";
+
+            return new InvalidTemplateException(msg);
+        }
     }
 }

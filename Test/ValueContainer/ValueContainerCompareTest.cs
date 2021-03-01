@@ -58,6 +58,15 @@ namespace Test
             Assert.AreEqual(false, new ValueContainer("").Equals(new ValueContainer(new ValueContainer[] {})));
             Assert.AreEqual(false, new ValueContainer("").Equals(new ValueContainer(new Dictionary<string, ValueContainer>())));
             Assert.AreEqual(false, new ValueContainer(2).Equals(new ValueContainer(new ValueContainer[] {})));
+           
+            Assert.IsTrue(new ValueContainer(2).Equals(new ValueContainer(2f)));
+            Assert.IsTrue(new ValueContainer(2).Equals(new ValueContainer(2d)));
+            Assert.IsTrue(new ValueContainer(2).Equals(new ValueContainer(2)));
+            Assert.IsTrue(new ValueContainer(2f).Equals(new ValueContainer(2)));
+            Assert.IsTrue(new ValueContainer(2d).Equals(new ValueContainer(2)));
+            Assert.IsTrue(new ValueContainer(2d).Equals(new ValueContainer(2f)));
+            Assert.IsTrue(new ValueContainer(2f).Equals(new ValueContainer(2d)));
+            Assert.IsFalse(new ValueContainer(2d).Equals(new ValueContainer(3)));
         }
     }
 }

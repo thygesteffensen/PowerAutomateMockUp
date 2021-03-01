@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Parser.ExpressionParser;
 
-namespace Parser.FlowParser.ActionExecutors.Implementations
+namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
 {
     public class ForEachActionExecutor : DefaultBaseActionExecutor, IScopeActionExecutor, IItemHandler
     {

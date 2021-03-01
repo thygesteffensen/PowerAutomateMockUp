@@ -59,7 +59,7 @@ namespace Parser.ExpressionParser
 
         public ValueContainer(float floatValue)
         {
-            _value = floatValue;
+            _value = Convert.ToDouble(floatValue);
             _type = ValueType.Float;
         }
 
@@ -250,9 +250,22 @@ namespace Parser.ExpressionParser
                 case JValue jValue:
                     if (jValue.HasValues)
                     {
-                        throw new PowerAutomateMockUpException("When parsing JToken to ValueContainer, the JToken as JValue can only contain one value.");
+                        throw new PowerAutomateMockUpException(
+                            "When parsing JToken to ValueContainer, the JToken as JValue can only contain one value.");
                     }
-                    return jValue.Value == null ? new ValueContainer() : new ValueContainer(jValue.Value.ToString(), true);
+
+                    return jValue.Type switch
+                    {
+                        JTokenType.Boolean => new ValueContainer(jValue.Value<bool>()),
+                        JTokenType.Integer => new ValueContainer(jValue.Value<int>()),
+                        JTokenType.Float => new ValueContainer(jValue.Value<float>()),
+                        JTokenType.Null => new ValueContainer(),
+                        JTokenType.String => new ValueContainer(jValue.Value<string>()),
+                        JTokenType.None => new ValueContainer(),
+                        JTokenType.Guid => new ValueContainer(jValue.Value<Guid>().ToString()),
+                        _ => throw new PowerAutomateMockUpException(
+                            $"{jValue.Type} is not yet supported in ValueContainer conversion")
+                    };
                 default:
                     throw new PowerAutomateMockUpException("Could not parse JToken to ValueContainer.");
             }
@@ -379,6 +392,19 @@ namespace Parser.ExpressionParser
                     var otherDict = other.GetValue<Dictionary<string, ValueContainer>>();
 
                     return thisDict.Count == otherDict.Count && !thisDict.Except(otherDict).Any();
+                }
+                case ValueType.Integer when other._type == ValueType.Float:
+                    var v = (double) _value;
+                    return Math.Abs(Math.Floor(v) - other._value) < double.Epsilon;
+                case ValueType.Float when other._type == ValueType.Integer:
+                {
+                    return Math.Abs(Math.Floor(_value) - other._value) < double.Epsilon;
+                }
+                case ValueType.Float:
+                {
+                    // TODO: Figure out how to handle comparison and in general how to handle float/double..
+                    // assignee: thygesteffensen
+                    return Math.Abs(_value - other._value) < 0.01;
                 }
                 default:
                     return Equals(_value, other._value) && _type == other._type;
