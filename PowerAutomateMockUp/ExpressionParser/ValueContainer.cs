@@ -112,9 +112,16 @@ namespace Parser.ExpressionParser
             _value = null;
         }
 
-        public ValueContainer(JToken json)
+        public ValueContainer(JToken json, IExpressionEngine expressionEngine = null)
         {
-            var v = JsonToValueContainer(json);
+            if (json == null)
+            {
+                _type = ValueType.Null;
+                _value = null;
+                return;
+            }
+
+            var v = JsonToValueContainer(json, expressionEngine);
             _type = v._type;
             _value = v._value;
         }
@@ -222,24 +229,26 @@ namespace Parser.ExpressionParser
             throw new PowerAutomateMockUpException("Can't get none object value container as dict.");
         }
 
-        private ValueContainer JsonToValueContainer(JToken json)
+        private ValueContainer JsonToValueContainer(JToken json, IExpressionEngine expressionEngine)
         {
             switch (json)
             {
-                case JObject jObject:
+                case JObject _:
                 {
                     var dictionary = json.ToDictionary(pair => ((JProperty) pair).Name, token =>
                     {
-                        if (token.Children().Count() != 1) return JsonToValueContainer(token.Children().First());
+                        if (token.Children().Count() != 1)
+                            return JsonToValueContainer(token.Children().First(), expressionEngine);
 
                         var t = token.First;
                         return t.Type switch
                         {
-                            JTokenType.String => new ValueContainer(t.Value<string>(), true),
+                            JTokenType.String => expressionEngine?.ParseToValueContainer(t.Value<string>()) ??
+                                                 new ValueContainer(t.Value<string>()),
                             JTokenType.Boolean => new ValueContainer(t.Value<bool>()),
                             JTokenType.Integer => new ValueContainer(t.Value<int>()),
                             JTokenType.Float => new ValueContainer(t.Value<float>()),
-                            _ => JsonToValueContainer(token.Children().First())
+                            _ => JsonToValueContainer(token.Children().First(), expressionEngine)
                         };
                     });
 
@@ -260,7 +269,8 @@ namespace Parser.ExpressionParser
                         JTokenType.Integer => new ValueContainer(jValue.Value<int>()),
                         JTokenType.Float => new ValueContainer(jValue.Value<float>()),
                         JTokenType.Null => new ValueContainer(),
-                        JTokenType.String => new ValueContainer(jValue.Value<string>()),
+                        JTokenType.String => expressionEngine?.ParseToValueContainer(jValue.Value<string>()) ??
+                                             new ValueContainer(jValue.Value<string>()),
                         JTokenType.None => new ValueContainer(),
                         JTokenType.Guid => new ValueContainer(jValue.Value<Guid>().ToString()),
                         _ => throw new PowerAutomateMockUpException(
