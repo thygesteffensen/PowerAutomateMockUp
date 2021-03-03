@@ -4,11 +4,11 @@ using Parser.ExpressionParser;
 
 namespace Parser.FlowParser.ActionExecutors.Implementations.DataOperation
 {
-    public class ComposeActionExecutor : DefaultBaseActionExecutor
+    public class ComposeActionExecutor : InputsBaseActionExecutor
     {
         private readonly IExpressionEngine _expressionEngine;
 
-        public ComposeActionExecutor(IExpressionEngine expressionEngine)
+        public ComposeActionExecutor(IExpressionEngine expressionEngine) : base(expressionEngine)
         {
             _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
         }

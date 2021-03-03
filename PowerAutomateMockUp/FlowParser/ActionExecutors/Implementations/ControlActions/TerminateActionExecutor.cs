@@ -6,11 +6,12 @@ using Parser.ExpressionParser;
 
 namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
 {
-    public class TerminateActionExecutor : DefaultBaseActionExecutor
+    public class TerminateActionExecutor : InputsBaseActionExecutor
     {
         private readonly ILogger<TerminateActionExecutor> _logger;
 
-        public TerminateActionExecutor(ILogger<TerminateActionExecutor> logger)
+        public TerminateActionExecutor(ILogger<TerminateActionExecutor> logger, IExpressionEngine expressionEngine) :
+            base(expressionEngine)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -23,7 +24,8 @@ namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
             {
                 case "Succeeded":
                 case "Cancelled":
-                    _logger.LogInformation($"Terminate Action {ActionName} reached with status {runStatus}.");
+                    _logger.LogInformation("Terminate Action {ActionName} reached with status {RunStatus}",
+                        ActionName, runStatus);
                     return Task.FromResult(new ActionResult
                     {
                         ActionStatus = ActionStatus.Succeeded,
@@ -31,10 +33,11 @@ namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
                     });
                 case "Failed":
                     var exceptionMessage = "Terminate action with status: Failed.";
-                    
+
                     if (!Inputs.GetValue<Dictionary<string, ValueContainer>>()
-                        .TryGetValue("runError", out var runErrorDict)) throw new PowerAutomateMockUpException(exceptionMessage);
-                    
+                        .TryGetValue("runError", out var runErrorDict))
+                        throw new PowerAutomateMockUpException(exceptionMessage);
+
                     var dict = runErrorDict.GetValue<Dictionary<string, ValueContainer>>();
 
                     if (dict.TryGetValue("code", out var code))
@@ -46,10 +49,11 @@ namespace Parser.FlowParser.ActionExecutors.Implementations.ControlActions
                     {
                         exceptionMessage += $" Error message: {message}.";
                     }
-                    
-                    _logger.LogInformation(
-                        $"Terminate Action {ActionName} reached with status {runStatus}. Error code: {code}. Error message: {message}. Throwing exception.");
-                    
+
+                    _logger.LogInformation("Terminate Action {ActionName} reached with status {RunStatus}. " +
+                                           "Error code: {Code}. Error message: {Message}. Throwing exception",
+                        ActionName, runStatus, code, message);
+
                     throw new PowerAutomateMockUpException(exceptionMessage);
                 default:
                     throw new Exception($"Unknown runStatus: {runStatus}");

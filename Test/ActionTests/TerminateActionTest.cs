@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Parser;
-using Parser.ExpressionParser.Functions.Base;
+using Parser.ExpressionParser;
 using Parser.FlowParser.ActionExecutors;
-using Parser.FlowParser.ActionExecutors.Implementations;
 using Parser.FlowParser.ActionExecutors.Implementations.ControlActions;
 
 namespace Test.ActionTests
@@ -16,18 +16,16 @@ namespace Test.ActionTests
         [Test]
         public async Task TerminateSucceededTest()
         {
-            /*var collection = new ServiceCollection();
-            collection.AddFlowRunner();
+            var expressionMock = new Mock<IExpressionEngine>();
+            expressionMock.Setup(x => x.ParseToValueContainer(It.IsAny<string>()))
+                .Returns<string>(input => new ValueContainer(input));
 
-            var sp = collection.BuildServiceProvider();
-            var actionExecutorFactory = sp.GetRequiredService<ActionExecutorFactory>();
-            var action = actionExecutorFactory.ResolveActionByType("Terminate");*/
-
-            var action = new TerminateActionExecutor(TestLogger.Create<TerminateActionExecutor>());
+            var action =
+                new TerminateActionExecutor(TestLogger.Create<TerminateActionExecutor>(), expressionMock.Object);
 
             var json =
                 "{\"Terminate\": { \"runAfter\": {}, \"type\": \"Terminate\", \"inputs\": { \"runStatus\": \"Succeeded\" } } }";
-            action.InitializeActionExecutor("TerminateAction", JToken.Parse(json).First.First);
+            action.InitializeActionExecutor("TerminateAction", JToken.Parse(json).First?.First);
 
             var resp = await action.Execute();
 
@@ -51,7 +49,7 @@ namespace Test.ActionTests
 
             var exception = Assert.ThrowsAsync<PowerAutomateMockUpException>(async () => { await action.Execute(); });
 
-            Assert.AreEqual("Terminate action with status: Failed. Error code: 1234.",exception.Message);
+            Assert.AreEqual("Terminate action with status: Failed. Error code: 1234.", exception.Message);
         }
     }
 }
