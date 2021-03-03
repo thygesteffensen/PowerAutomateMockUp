@@ -21,25 +21,18 @@
     <a href="https://thygesteffensen.github.io/PowerAutomateMockUp/Technical">Technical</a>
 </p> -->
 
-Currently there is not a way to unit test Power Automate flows. You have the ability to manually run a flow with static results, but this isn't the same as a unit test. I have during my work implemented business critical functionality in Power Automate using Common Data Service (current environment) connector.
+~~Currently there is not a way to unit test Power Automate flows. You have the ability to manually run a flow with static results, but this isn't the same as a unit test. I have during my work implemented business critical functionality in Power Automate using Common Data Service (current environment) connector.~~
 
-## Code style
-The code is written using [Riders](https://www.jetbrains.com/help/rider/Settings_Code_Style_CSHARP.html) default C# code style.
-
-Commits are written in [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) style, the commit messages are used to determine the version and when to release a new version. The pipeline is hosted on Github and [Semantic Release](https://github.com/semantic-release/semantic-release) is used.
+There is a way to unit test Power Automate flows!
 
 ## Installation
 
 A the [NuGet package](https://www.nuget.org/packages/PowerAutomateMockUp/) to your project.
 
-## Tests
-
-Tests are located in the **Tests** project and they are written using Nunit as test framework.
-
 ## How to use
 
 ### Introduction
-This is a skeleton and itself will not test anything OOB. Instead this is meant as the core, used to implement different connectors. As you probably know, Power Automate uses Connectors to interact with others service, such as Common Data Service. I have implemented [Common Data Service (current environment)](https://github.com/thygesteffensen/PAMU_CDS), go take a look to see how it can be used.
+This is a skeleton and itself will not test anything OOB. Instead this is meant as the core, used to implement different connectors. As you probably know, Power Automate uses Connectors to interact with others services, such as Common Data Service. I have implemented [Common Data Service (current environment)](https://github.com/thygesteffensen/PAMU_CDS), go take a look to see how it can be used.
 
 ### Getting Started
 
@@ -58,7 +51,7 @@ var flowRunner = sp.GetRequiredService<FlowRunner>();
 
 flowRunner.InitializeFlowRunner(path);
 
-await flowRunner.Trigger();
+var flowResult = await flowRunner.Trigger();
 
 // Your flow have now ran
 ```
@@ -70,10 +63,25 @@ The settings object is configured this way:
 ```cs
 services.Configure<FlowSettings>(x => { }); // Optional way to add settings
 ```
-The possbile values to set is:
+The possible values to set is:
 
  * `x.FailOnUnknownAction` (default: `true`): If an action cannot be found and exception is thrown. This can be avoid and the action is ignored and the status is assumed to be `Succeeded`.
- * `x.IgnoreActions` (default: `empty`): List of action names which are ignored during exectuion, the action is not executed and the status is assumed to be `Succeeded`.
+ * `x.IgnoreActions` (default: `empty`): List of action names which are ignored during execution, the action is not executed and the status is assumed to be `Succeeded`.
+* `x.LogActionsStates` (default: `true`): Logs JSON, parsed input and generated output for every action executed.
+
+### Asserting action input and output
+
+The FlowReport from triggering the flow can be used to assert the input and output of an action.
+
+This can be used to verify that the expected parameters to an action is present and you can assert the input is as expected.
+
+```c#
+var greetingCardItems = flowReport.ActionStates["Create_a_new_row_-_Create_greeting_note"]
+                .ActionInput?["parameters"]?["item"];
+Assert.IsNotNull(greetingCardItems);
+Assert.AreEqual(expectedNoteSubject, greetingCardItems["subject"]);
+Assert.AreEqual(expectedNoteText, greetingCardItems["notetext"]);
+```
 
 ### Adding actions
 Actions can be added in three ways
@@ -193,11 +201,21 @@ The response is returned wrap in the ValueContainer.
 #### IState
 IState, and its implementation, is how the state of the execution of a Power Automate flow is handled. It contains the trigger values and can give the value of previous executed actions, by either using one of the interfaces below (for simplicity) or IState itself.
 
+## Tests
+
+Tests are located in the **Tests** project and they are written using Nunit as test framework.
+
+
 ## Contribute
 
 This is my bachelor project and I'm currently not accepting contributions until it have been handed in. Anyway, fell free to drop an issue with a suggestion or improvement.
 
 <!--## Credits-->
+
+## Code style
+The code is written using [Riders](https://www.jetbrains.com/help/rider/Settings_Code_Style_CSHARP.html) default C# code style.
+
+Commits are written in [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) style, the commit messages are used to determine the version and when to release a new version. The pipeline is hosted on Github and [Semantic Release](https://github.com/semantic-release/semantic-release) is used.
 
 
 
