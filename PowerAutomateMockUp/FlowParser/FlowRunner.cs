@@ -26,6 +26,7 @@ namespace Parser.FlowParser
         private readonly IScopeDepthManager _scopeManager;
         private readonly IActionExecutorFactory _actionExecutorFactory;
         private readonly ILogger<FlowRunner> _logger;
+        private readonly IExpressionEngine _expressionEngine;
         private readonly Dictionary<string, ActionState> _actionSates;
         private int _actionsExecuted;
         private JProperty _trigger;
@@ -35,7 +36,8 @@ namespace Parser.FlowParser
             IScopeDepthManager scopeDepthManager,
             IOptions<FlowSettings> flowRunnerSettings,
             IActionExecutorFactory actionExecutorFactory,
-            ILogger<FlowRunner> logger)
+            ILogger<FlowRunner> logger,
+            IExpressionEngine expressionEngine)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
             _scopeManager = scopeDepthManager;
@@ -43,6 +45,7 @@ namespace Parser.FlowParser
             _actionExecutorFactory =
                 actionExecutorFactory ?? throw new ArgumentNullException(nameof(actionExecutorFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
             _actionSates = new Dictionary<string, ActionState>();
             _actionsExecuted = 0;
         }
@@ -118,8 +121,9 @@ namespace Parser.FlowParser
 
                     _actionSates[currentAd.Name] = new ActionState
                     {
+                        ActionInputJson = jsonInputs,
                         ActionInput = actionExecutor?.Inputs ??
-                                      (jsonInputs == null ? null : new ValueContainer(jsonInputs)),
+                                      (jsonInputs == null ? null : new ValueContainer(jsonInputs, _expressionEngine)),
                         ActionOutput = actionResult,
                         ActionOrder = _actionsExecuted++,
                         ActionName = actionExecutor?.ActionName

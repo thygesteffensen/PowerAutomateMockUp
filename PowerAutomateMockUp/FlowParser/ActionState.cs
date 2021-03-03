@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using Parser.ExpressionParser;
 using Parser.FlowParser.ActionExecutors;
 
@@ -24,7 +25,7 @@ namespace Parser.FlowParser
         public ActionResult? ActionOutput { get; set; }
 #nullable disable
         public string ActionName { get; set; }
-        public string ActionType { get; set; }
         public int ActionOrder { get; set; }
+        public JToken ActionInputJson { get; set; }
     }
 }
