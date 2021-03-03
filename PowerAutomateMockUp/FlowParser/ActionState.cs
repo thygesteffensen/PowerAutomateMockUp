@@ -18,23 +18,8 @@ namespace Parser.FlowParser
 
     public class ActionState
     {
-        private ValueContainer? _actionInput;
 #nullable enable
-        public ValueContainer? ActionInput
-        {
-            get => _actionInput;
-            set
-            {
-                _actionInput = value;
-                if (_actionInput == null || _actionInput.Type() != ValueContainer.ValueType.Object) return;
-                if (_actionInput.AsDict().ContainsKey("parameters"))
-                {
-                    ActionParameters = _actionInput.AsDict()["parameters"];
-                }
-            }
-        }
-
-        public ValueContainer? ActionParameters { set; get; }
+        public ValueContainer? ActionInput { get; set; }
 
         public ActionResult? ActionOutput { get; set; }
 #nullable disable

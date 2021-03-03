@@ -23,6 +23,12 @@ namespace Test
             var services = new ServiceCollection();
             services.AddFlowRunner();
 
+            const string authentication = "Custom value";
+            services.Configure<WorkflowParameters>(x => x.Parameters = new Dictionary<string, ValueContainer>
+            {
+                {"$authentication", new ValueContainer(authentication)}
+            });
+
             services.AddFlowActionByName<UpdateAccountInvalidId>(UpdateAccountInvalidId.FlowActionName);
             services.AddFlowActionByApiIdAndOperationsName<SendEmailNotification>(SendEmailNotification.ApiId,
                 SendEmailNotification.SupportedOperations);
@@ -47,16 +53,25 @@ namespace Test
 
             const string actionName = "Send_me_an_email_notification";
             Assert.IsTrue(flowResult.ActionStates.ContainsKey(actionName), "Action is expected to be triggered.");
-            Assert.NotNull(flowResult.ActionStates[actionName].ActionParameters, "Action input is expected.");
-            var actionInput = flowResult.ActionStates[actionName].ActionParameters.AsDict();
-            Assert.IsTrue(actionInput.ContainsKey("NotificationEmailDefinition"), "Action input should contain this object.");
+            Assert.NotNull(flowResult.ActionStates[actionName].ActionInput?["parameters"], "Action input is expected.");
+            var actionInput = flowResult.ActionStates[actionName].ActionInput?["parameters"].AsDict();
+            Assert.IsTrue(actionInput.ContainsKey("NotificationEmailDefinition"),
+                "Action input should contain this object.");
             var notification = actionInput["NotificationEmailDefinition"].AsDict();
-            Assert.AreEqual("A new Account have been added", notification["notificationSubject"].GetValue<string>(), "Asserting the input");
-            
-            Assert.IsFalse(flowResult.ActionStates.ContainsKey(SendOutWarning.FlowActionName), "Action is not expected to be triggered.");
+            Assert.AreEqual("A new Account have been added", notification["notificationSubject"].GetValue<string>(),
+                "Asserting the input");
+
+            Assert.IsFalse(flowResult.ActionStates.ContainsKey(SendOutWarning.FlowActionName),
+                "Action is not expected to be triggered.");
+
+            var getRecordValidIdActionAuth =
+                flowResult.ActionStates["Get_a_record_-_Valid_Id"].ActionInput?["authentication"];
+            Assert.IsNotNull(getRecordValidIdActionAuth);
+            Assert.AreEqual(ValueContainer.ValueType.String, getRecordValidIdActionAuth.Type());
+            Assert.AreEqual(authentication, getRecordValidIdActionAuth.GetValue<string>());
         }
 
-        private class UpdateAccountInvalidId : OpenApiConnectionActionExecutorBase  
+        private class UpdateAccountInvalidId : OpenApiConnectionActionExecutorBase
         {
             public const string FlowActionName = "Update_Account_-_Invalid_Id";
 

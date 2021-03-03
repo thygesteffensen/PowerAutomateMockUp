@@ -114,9 +114,12 @@ namespace Parser.FlowParser
 
                 if (_flowRunnerSettings.LogActionsStates)
                 {
+                    var jsonInputs = currentAd.First?.SelectToken("$.inputs");
+
                     _actionSates[currentAd.Name] = new ActionState
                     {
-                        ActionInput = actionExecutor?.Inputs,
+                        ActionInput = actionExecutor?.Inputs ??
+                                      (jsonInputs == null ? null : new ValueContainer(jsonInputs)),
                         ActionOutput = actionResult,
                         ActionOrder = _actionsExecuted++,
                         ActionName = actionExecutor?.ActionName
@@ -151,7 +154,7 @@ namespace Parser.FlowParser
                 if (currentAd == null && actionResultStatus == ActionStatus.Failed)
                 {
                     _logger.LogError(
-                        "No succeeding action found after last action had status: Failed. Throwing error.");
+                        "No succeeding action found after last action had status: Failed. Throwing error");
                     throw actionResult?.ActionExecutorException ??
                           new PowerAutomateMockUpException(
                               $"No exception recorded - {actionExecutor.ActionName} ended with status: Failed.");
