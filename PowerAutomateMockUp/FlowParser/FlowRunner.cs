@@ -15,8 +15,8 @@ namespace Parser.FlowParser
     public interface IFlowRunner
     {
         void InitializeFlowRunner(in string path);
-        Task<FlowResult> Trigger();
-        Task<FlowResult> Trigger(ValueContainer triggerOutput);
+        Task<FlowReport> Trigger();
+        Task<FlowReport> Trigger(ValueContainer triggerOutput);
     }
 
     public class FlowRunner : IFlowRunner
@@ -27,7 +27,7 @@ namespace Parser.FlowParser
         private readonly IActionExecutorFactory _actionExecutorFactory;
         private readonly ILogger<FlowRunner> _logger;
         private readonly IExpressionEngine _expressionEngine;
-        private readonly Dictionary<string, ActionState> _actionSates;
+        private readonly Dictionary<string, ActionReport> _actionSates;
         private int _actionsExecuted;
         private JProperty _trigger;
 
@@ -46,7 +46,7 @@ namespace Parser.FlowParser
                 actionExecutorFactory ?? throw new ArgumentNullException(nameof(actionExecutorFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
-            _actionSates = new Dictionary<string, ActionState>();
+            _actionSates = new Dictionary<string, ActionReport>();
             _actionsExecuted = 0;
         }
 
@@ -61,7 +61,7 @@ namespace Parser.FlowParser
             _scopeManager.Push("root", flowDefinition.SelectToken("$.actions").OfType<JProperty>(), null);
         }
 
-        public async Task<FlowResult> Trigger()
+        public async Task<FlowReport> Trigger()
         {
             var trigger = GetActionExecutor(_trigger);
 
@@ -75,20 +75,20 @@ namespace Parser.FlowParser
 
             await RunFlow();
 
-            return new FlowResult
+            return new FlowReport
             {
                 ActionStates = _actionSates,
                 NumberOfExecutedActions = _actionsExecuted
             };
         }
 
-        public async Task<FlowResult> Trigger(ValueContainer triggerOutput)
+        public async Task<FlowReport> Trigger(ValueContainer triggerOutput)
         {
             _state.AddTriggerOutputs(triggerOutput);
 
             await RunFlow();
 
-            return new FlowResult
+            return new FlowReport
             {
                 ActionStates = _actionSates,
                 NumberOfExecutedActions = _actionsExecuted
@@ -119,9 +119,9 @@ namespace Parser.FlowParser
                 {
                     var jsonInputs = currentAd.First?.SelectToken("$.inputs");
 
-                    _actionSates[currentAd.Name] = new ActionState
+                    _actionSates[currentAd.Name] = new ActionReport
                     {
-                        ActionInputJson = jsonInputs,
+                        ActionJson = jsonInputs,
                         ActionInput = actionExecutor?.Inputs ??
                                       (jsonInputs == null ? null : new ValueContainer(jsonInputs, _expressionEngine)),
                         ActionOutput = actionResult,
