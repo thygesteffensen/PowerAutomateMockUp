@@ -19,7 +19,7 @@ namespace Test
         [Test]
         public async Task TestFlowFalse()
         {
-            var path = @$"{TestFlowPath}\Pure CDS ce.json";
+            var path = @$"{TestFlowPath}/Pure CDS ce.json";
 
             var services = new ServiceCollection();
 

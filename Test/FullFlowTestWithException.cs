@@ -20,7 +20,7 @@ namespace Test
         [Test]
         public void TestFlowFalse()
         {
-            var path = @$"{TestFlowPath}\PowerAutomateMockUpSampleFlow.json";
+            var path = @$"{TestFlowPath}/PowerAutomateMockUpSampleFlow.json";
 
             var services = new ServiceCollection();
 

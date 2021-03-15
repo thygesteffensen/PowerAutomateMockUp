@@ -18,7 +18,7 @@ namespace Test
         public async Task TestFlowFalse()
         {
             // Arrange
-            var path = @$"{TestFlowPath}\ContactTrigger.json";
+            var path = @$"{TestFlowPath}/ContactTrigger.json";
 
             var services = new ServiceCollection();
 

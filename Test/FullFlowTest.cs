@@ -18,7 +18,7 @@ namespace Test
         [Test]
         public async Task TestFlowFalse()
         {
-            var path = @$"{TestFlowPath}\PowerAutomateMockUpSampleFlow.json";
+            var path = @$"{TestFlowPath}/PowerAutomateMockUpSampleFlow.json";
 
             var services = new ServiceCollection();
 

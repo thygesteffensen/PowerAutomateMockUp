@@ -20,7 +20,7 @@ namespace Test
         [Test]
         public async Task TestForEachFlow()
         {
-            var path = @$"{TestFlowPath}\PAMUSwitch.json";
+            var path = @$"{TestFlowPath}/PAMUSwitch.json";
 
             var services = new ServiceCollection();
 

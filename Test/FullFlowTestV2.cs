@@ -18,7 +18,7 @@ namespace Test
         [Test]
         public async Task TestFlowFalse()
         {
-            var path = @$"{TestFlowPath}\PowerAutomateMockUpSampleFlow.json";
+            var path = @$"{TestFlowPath}/PowerAutomateMockUpSampleFlow.json";
 
             var services = new ServiceCollection();
             services.AddFlowRunner();
@@ -52,6 +52,15 @@ namespace Test
             Assert.AreEqual(7, flowResult.NumberOfExecutedActions);
 
             const string actionName = "Send_me_an_email_notification";
+
+            FlowAssert.AssertActionWasTriggered(flowResult, actionName);
+            FlowAssert.AssertFlowParameters(flowResult, actionName,
+                // TODO: Overwrite ContainsKey to also include children dicts for easier use
+                x => x.AsDict().ContainsKey("parameters/NotificationEmailDefinition"),
+                x => x["parameters/NotificationEmailDefinition/notificationSubject"].Equals(new ValueContainer("A new Account have been added")), // This will result in false, because
+                x => x["parameters/NotificationEmailDefinition/notificationSubject"].GetValue<string>() == "A new Account have been added", // This will cause an error
+                x => x["NotificationEmailDefinition"].Equals(new ValueContainer("A new Account have been added")));
+
             Assert.IsTrue(flowResult.ActionStates.ContainsKey(actionName), "Action is expected to be triggered.");
             Assert.NotNull(flowResult.ActionStates[actionName].ActionInput?["parameters"], "Action input is expected.");
             var actionInput = flowResult.ActionStates[actionName].ActionInput?["parameters"].AsDict();
