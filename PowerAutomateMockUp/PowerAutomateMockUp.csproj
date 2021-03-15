@@ -18,6 +18,10 @@
 
     <ItemGroup>
         <!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
+        <PackageReference Include="DefaultDocumentation" Version="0.6.14">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
