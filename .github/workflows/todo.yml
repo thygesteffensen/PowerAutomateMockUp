@@ -1,9 +1,10 @@
-﻿name: "Create issues from todo"
+name: "Create issues from todo"
 
 on:
   push:
     branches:
-      - dev
+      - 'dev'
+      - 'feature/**'
 
 jobs:
   build:
