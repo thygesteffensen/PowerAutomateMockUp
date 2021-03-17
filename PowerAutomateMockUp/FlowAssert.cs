@@ -36,9 +36,9 @@ namespace Parser
             {
                 try
                 {
-                    if (expression.Compile().Invoke(actionVc))
+                    if (!expression.Compile().Invoke(actionVc))
                     {
-                        exceptions.Add(new FlowAssertionException("One of the predicates didn't match..."));
+                        exceptions.Add(new FlowAssertionException($"{expression} resulted in false."));
                     }
                 }
                 catch (KeyNotFoundException keyNotFoundException)
