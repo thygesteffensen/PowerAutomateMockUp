@@ -438,11 +438,12 @@ namespace Parser.ExpressionParser
             if (_type != ValueType.Object) return false;
 
             var current = AsDict();
-            foreach (var k in key.Split('/'))
+            var keys = key.Split('/');
+            for (var i = 0; i < keys.Length - 1; i++)
             {
-                if (current.ContainsKey(k))
+                if (current.ContainsKey(keys[i]))
                 {
-                    current = current[k].AsDict();
+                    current = current[keys[i]].AsDict();
                 }
                 else
                 {
@@ -450,7 +451,7 @@ namespace Parser.ExpressionParser
                 }
             }
 
-            return true;
+            return current.ContainsKey(keys[keys.Length-1]);
         }
     }
 
