@@ -48,8 +48,8 @@ namespace Test.Expression
             {
                 new FormatNumberFunction(),
                 "formatNumber",
-                new[] {new ValueContainer(17.35), new ValueContainer("C2"), new ValueContainer("is-is")},
-                new ValueContainer("17,35 ISK")
+                new[] {new ValueContainer(17.35), new ValueContainer("C2"), new ValueContainer("da-dk")},
+                new ValueContainer("17,35 kr.")
             },
             new object[]
             {
