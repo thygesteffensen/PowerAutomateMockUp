@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{DCBD636B-9320-4843-B2C0-F6599162116B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerAutomateMockUp", "PowerAutomateMockUp\PowerAutomateMockUp.csproj", "{FA5B2BAD-31DF-42D9-9E35-BC058316F06D}"
+Project("{CA41CED4-F7C0-4097-8252-F781C11B1371}") = "ExpressionEngine", "ExpressionEngine\ExpressionEngine.csproj", "{FA5B2BAD-31DF-42D9-9E35-BC058316F06D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3A832071-17C0-4F94-8592-4060E11AB731}"
 	ProjectSection(SolutionItems) = preProject
