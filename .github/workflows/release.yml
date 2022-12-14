@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run tests
         run: dotnet test --verbosity normal
@@ -24,10 +24,10 @@ jobs:
       - test
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
 
       - name: Add plugin for conventional commits
         run: npm install conventional-changelog-conventionalcommits
@@ -50,7 +50,7 @@ jobs:
         run: echo ${env:RELEASE_VERSION}
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v1.1
 
       - name: Restore NuGet packages
         run: nuget restore PowerAutomateMockUp.sln
