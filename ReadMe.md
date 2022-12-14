@@ -208,7 +208,7 @@ Tests are located in the **Tests** project and they are written using Nunit as t
 
 ## Contribute
 
-Feel free to create an issue with a suggestion, create a pull request or participate in any way you like :rokcet:
+Feel free to create an issue with a suggestion, create a pull request or participate in any way you like :rocket:
 
 <!--## Credits-->
 
