@@ -28,8 +28,6 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v1
-        with:
-          node-version: 13
 
       - name: Add plugin for conventional commits
         run: npm install conventional-changelog-conventionalcommits
@@ -39,7 +37,7 @@ jobs:
         run: npm install @semantic-release/exec -D
         working-directory: ./.github/workflows
 
-      - name: Dry Run Semantic to get next Version nummber
+      - name: Dry Run Semantic to get next Version number
         working-directory: ./.github/workflows
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
