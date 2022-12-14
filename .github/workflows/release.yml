@@ -63,7 +63,7 @@ jobs:
         working-directory: .\\.github\\workflows
         env:
           CI_NUGET_API_KEY: ${{ secrets.NUGETAPIKEY }}
-          GITHUB_TOKEN: ${{ secrets.GITUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: thygesteffensen
           GIT_AUTHOR_EMAIL: 31892312+thygesteffensen@users.noreply.github.com
         run: npx semantic-release
