@@ -13,7 +13,7 @@ jobs:
     name: Testing
     steps:
       - name: Checkout code base
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run tests
         run: dotnet test --verbosity normal
@@ -23,10 +23,10 @@ jobs:
     name: Building
     steps:
       - name: Checkout code base
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v1.1
 
       - name: Restore NuGet packages
         run: nuget restore PowerAutomateMockUp.sln
@@ -35,7 +35,7 @@ jobs:
         run: msbuild /p:OutputPath=../build /p:Configuration=Release /p:RestorePackages=false
 
       - name: Archive build to artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: |

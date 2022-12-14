@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,7 +8,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Parser.ExpressionParser;
-using Parser.ExpressionParser.Functions.Base;
 using Parser.FlowParser.ActionExecutors;
 
 namespace Parser.FlowParser
@@ -15,8 +15,8 @@ namespace Parser.FlowParser
     public interface IFlowRunner
     {
         void InitializeFlowRunner(in string path);
-        Task Trigger();
-        Task Trigger(ValueContainer triggerOutput);
+        Task<FlowReport> Trigger();
+        Task<FlowReport> Trigger(ValueContainer triggerOutput);
     }
 
     public class FlowRunner : IFlowRunner
@@ -26,6 +26,9 @@ namespace Parser.FlowParser
         private readonly IScopeDepthManager _scopeManager;
         private readonly IActionExecutorFactory _actionExecutorFactory;
         private readonly ILogger<FlowRunner> _logger;
+        private readonly IExpressionEngine _expressionEngine;
+        private readonly Dictionary<string, ActionReport> _actionSates;
+        private int _actionsExecuted;
         private JProperty _trigger;
 
         public FlowRunner(
@@ -33,7 +36,8 @@ namespace Parser.FlowParser
             IScopeDepthManager scopeDepthManager,
             IOptions<FlowSettings> flowRunnerSettings,
             IActionExecutorFactory actionExecutorFactory,
-            ILogger<FlowRunner> logger)
+            ILogger<FlowRunner> logger,
+            IExpressionEngine expressionEngine)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
             _scopeManager = scopeDepthManager;
@@ -41,6 +45,9 @@ namespace Parser.FlowParser
             _actionExecutorFactory =
                 actionExecutorFactory ?? throw new ArgumentNullException(nameof(actionExecutorFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _expressionEngine = expressionEngine ?? throw new ArgumentNullException(nameof(expressionEngine));
+            _actionSates = new Dictionary<string, ActionReport>();
+            _actionsExecuted = 0;
         }
 
         public void InitializeFlowRunner(in string path)
@@ -54,7 +61,7 @@ namespace Parser.FlowParser
             _scopeManager.Push("root", flowDefinition.SelectToken("$.actions").OfType<JProperty>(), null);
         }
 
-        public async Task Trigger()
+        public async Task<FlowReport> Trigger()
         {
             var trigger = GetActionExecutor(_trigger);
 
@@ -67,13 +74,25 @@ namespace Parser.FlowParser
             }
 
             await RunFlow();
+
+            return new FlowReport
+            {
+                ActionStates = _actionSates,
+                NumberOfExecutedActions = _actionsExecuted
+            };
         }
 
-        public async Task Trigger(ValueContainer triggerOutput)
+        public async Task<FlowReport> Trigger(ValueContainer triggerOutput)
         {
             _state.AddTriggerOutputs(triggerOutput);
 
             await RunFlow();
+
+            return new FlowReport
+            {
+                ActionStates = _actionSates,
+                NumberOfExecutedActions = _actionsExecuted
+            };
         }
 
         private async Task RunFlow()
@@ -95,6 +114,22 @@ namespace Parser.FlowParser
                 var actionExecutor = GetActionExecutor(currentAd);
 
                 var actionResult = await ExecuteAction(actionExecutor, currentAd);
+
+                if (_flowRunnerSettings.LogActionsStates)
+                {
+                    var jsonInputs = currentAd.First?.SelectToken("$.inputs");
+
+                    _actionSates[currentAd.Name] = new ActionReport
+                    {
+                        ActionJson = jsonInputs,
+                        ActionInput = actionExecutor?.Inputs ??
+                                      (jsonInputs == null ? null : new ValueContainer(jsonInputs, _expressionEngine)),
+                        ActionOutput = actionResult,
+                        ActionOrder = _actionsExecuted++,
+                        ActionName = actionExecutor?.ActionName
+                    };
+                }
+
                 if (!(actionResult?.ContinueExecution ?? true))
                 {
                     break;
@@ -123,7 +158,7 @@ namespace Parser.FlowParser
                 if (currentAd == null && actionResultStatus == ActionStatus.Failed)
                 {
                     _logger.LogError(
-                        "No succeeding action found after last action had status: Failed. Throwing error.");
+                        "No succeeding action found after last action had status: Failed. Throwing error");
                     throw actionResult?.ActionExecutorException ??
                           new PowerAutomateMockUpException(
                               $"No exception recorded - {actionExecutor.ActionName} ended with status: Failed.");

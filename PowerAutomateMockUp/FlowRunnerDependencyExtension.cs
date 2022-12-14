@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Parser.ExpressionParser;
 using Parser.ExpressionParser.Functions.Base;
 using Parser.ExpressionParser.Functions.Implementations.CollectionFunctions;
 using Parser.ExpressionParser.Functions.Implementations.ConversionFunctions;
 using Parser.ExpressionParser.Functions.Implementations.LogicalComparisonFunctions;
+using Parser.ExpressionParser.Functions.Implementations.Miscellaneous;
 using Parser.ExpressionParser.Functions.Implementations.StringFunctions;
 using Parser.ExpressionParser.Functions.Storage;
 using Parser.FlowParser;
@@ -33,6 +35,7 @@ namespace Parser
             AddStringFunctions(services);
             AddCollectionFunction(services);
             AddConversionFunction(services);
+            AddMiscellaneousFunctions(services);
 
             services.AddTransient<IFunction, VariablesFunction>();
             services.AddTransient<IFunction, OutputsFunction>();
@@ -50,6 +53,11 @@ namespace Parser
             services.AddFlowActionByFlowType<SwitchActionExecutor>("Switch");
 
             services.AddLogging();
+        }
+
+        private static void AddMiscellaneousFunctions(IServiceCollection services)
+        {
+            services.AddTransient<IFunction, ParametersFunction>();
         }
 
         private static void AddStringFunctions(IServiceCollection services)

@@ -10,18 +10,12 @@ namespace Parser.FlowParser.ActionExecutors
 
         public string ActionName { get; private set; }
 
-        public ValueContainer Inputs { get; private set; }
+        public ValueContainer Inputs { get; protected set; }
 
         public void InitializeActionExecutor(string actionName, JToken json)
         {
             ActionName = actionName;
             Json = json;
-
-            var inputs = Json.SelectToken("$.inputs");
-            if (inputs != null)
-            {
-                Inputs = new ValueContainer(inputs);
-            }
 
             ProcessJson();
         }

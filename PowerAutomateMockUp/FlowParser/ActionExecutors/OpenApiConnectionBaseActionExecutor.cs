@@ -17,21 +17,23 @@ namespace Parser.FlowParser.ActionExecutors
 
         protected override void ProcessJson()
         {
-            var type = Json.SelectToken("$.type").Value<string>();
+            var type = Json.SelectToken("$.type")?.Value<string>();
+
+            var inputs = Json.SelectToken("$.inputs");
+
+            if (inputs == null) return;
+
+            Inputs = new ValueContainer(inputs, _expressionEngine);
 
             if (type != "OpenApiConnection")
                 throw new InvalidOperationException(
                     "The expected Action Description type was OpenApiConnection, but the " +
                     $"Action Description type was {type}.");
 
-            var inputs = Json.SelectToken("$.inputs");
+
             var content = inputs.ToObject<ActionInputs>();
-            Host = content.HostValues;
-            Parameters = new ValueContainer(new Dictionary<string, ValueContainer>());
-            foreach (var keyValuePar in content.Parameters)
-            {
-                Parameters[keyValuePar.Key] = _expressionEngine.ParseToValueContainer(keyValuePar.Value);
-            }
+            Host = content?.HostValues;
+            Parameters = Inputs["parameters"];
         }
 
         protected HostValues Host { get; set; }
