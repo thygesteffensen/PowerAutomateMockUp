@@ -16,6 +16,7 @@ jobs:
 
       - name: Run tests
         run: dotnet test --verbosity normal
+        working-directory: ./src
 
   release:
     name: Releasing
@@ -54,9 +55,11 @@ jobs:
 
       - name: Restore NuGet packages
         run: nuget restore PowerAutomateMockUp.sln
+        working-directory: ./src
 
       - name: Package Parser
         run: msbuild /t:pack /p:PackageVersion=${env:RELEASE_VERSION} /p:OutputPath=..\\artifacts
+        working-directory: ./src
         if: ${{ env.RELEASE_VERSION }}
 
       - name: Release to GitHub

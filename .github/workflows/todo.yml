@@ -6,7 +6,8 @@ on:
       - dev
 
 jobs:
-  build:
+  create-todoes: 
+    name: Create todoes
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@master"

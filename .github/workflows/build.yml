@@ -11,9 +11,10 @@ jobs:
     steps:
       - name: Checkout code base
         uses: actions/checkout@v3
-
+        
       - name: Run tests
         run: dotnet test --verbosity normal
+        working-directory: ./src
 
   build:
     runs-on: windows-latest
@@ -27,12 +28,15 @@ jobs:
 
       - name: Restore NuGet packages
         run: nuget restore PowerAutomateMockUp.sln
+        working-directory: ./src
 
       - name: Build solution
         run: msbuild /p:OutputPath=../build /p:Configuration=Release /p:RestorePackages=false
+        working-directory: ./src
 
       - name: Archive build to artifacts
         uses: actions/upload-artifact@v3
+        working-directory: ./src
         with:
           name: build
           path: |
