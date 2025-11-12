@@ -1,0 +1,225 @@
+{
+  "properties": {
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {},
+      "triggers": {
+        "When_a_new_email_arrives": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365",
+              "operationId": "OnNewEmailV3"
+            },
+            "parameters": {
+              "folderPath": "Inbox",
+              "importance": "Any"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Initialize_Email_Content": {
+          "type": "Compose",
+          "inputs": "@toLower(concat(triggerOutputs()?['body/subject'], ' ', triggerOutputs()?['body/bodyPreview']))",
+          "runAfter": {}
+        },
+        "Check_RFQ_RFP_Inquiry": {
+          "type": "If",
+          "expression": {
+            "or": [
+              {
+                "contains": [
+                  "@outputs('Initialize_Email_Content')",
+                  "rfq"
+                ]
+              },
+              {
+                "contains": [
+                  "@outputs('Initialize_Email_Content')",
+                  "rfp"
+                ]
+              },
+              {
+                "contains": [
+                  "@outputs('Initialize_Email_Content')",
+                  "inquiry"
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Post_to_Sales_Team": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                  "connectionName": "shared_teams",
+                  "operationId": "PostMessageToChannel"
+                },
+                "parameters": {
+                  "teamId": "sales-team-id",
+                  "channelId": "sales-channel-id",
+                  "message": {
+                    "body": {
+                      "content": "<p><strong>New Sales Inquiry Received</strong></p><p>Subject: @{triggerOutputs()?['body/subject']}</p><p>From: @{triggerOutputs()?['body/from']}</p><p>Preview: @{triggerOutputs()?['body/bodyPreview']}</p>",
+                      "contentType": "html"
+                    }
+                  }
+                }
+              },
+              "runAfter": {}
+            },
+            "Forward_to_Sales": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "connectionName": "shared_office365",
+                  "operationId": "ForwardEmail"
+                },
+                "parameters": {
+                  "messageId": "@triggerOutputs()?['body/id']",
+                  "forwardEmailMessage": {
+                    "To": "sales@company.com",
+                    "Comment": "Automatically forwarded - Sales inquiry detected"
+                  }
+                }
+              },
+              "runAfter": {
+                "Post_to_Sales_Team": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_Email_Content": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {
+              "Check_Polish_Zapytanie": {
+                "type": "If",
+                "expression": {
+                  "contains": [
+                    "@outputs('Initialize_Email_Content')",
+                    "zapytanie"
+                  ]
+                },
+                "actions": {
+                  "Post_to_International_Sales_PL": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                        "connectionName": "shared_teams",
+                        "operationId": "PostMessageToChannel"
+                      },
+                      "parameters": {
+                        "teamId": "intl-team-id",
+                        "channelId": "intl-channel-id",
+                        "message": {
+                          "body": {
+                            "content": "<p><strong>Zapytanie (Polish Inquiry)</strong></p><p>Subject: @{triggerOutputs()?['body/subject']}</p><p>From: @{triggerOutputs()?['body/from']}</p><p>Preview: @{triggerOutputs()?['body/bodyPreview']}</p>",
+                            "contentType": "html"
+                          }
+                        }
+                      }
+                    },
+                    "runAfter": {}
+                  },
+                  "Forward_to_Sales_PL": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                        "connectionName": "shared_office365",
+                        "operationId": "ForwardEmail"
+                      },
+                      "parameters": {
+                        "messageId": "@triggerOutputs()?['body/id']",
+                        "forwardEmailMessage": {
+                          "To": "sales-pl@company.com",
+                          "Comment": "Automatically forwarded - Polish inquiry detected"
+                        }
+                      }
+                    },
+                    "runAfter": {
+                      "Post_to_International_Sales_PL": [
+                        "Succeeded"
+                      ]
+                    }
+                  }
+                },
+                "runAfter": {},
+                "else": {
+                  "actions": {
+                    "Check_German_Anfrage": {
+                      "type": "If",
+                      "expression": {
+                        "contains": [
+                          "@outputs('Initialize_Email_Content')",
+                          "anfrage"
+                        ]
+                      },
+                      "actions": {
+                        "Post_to_International_Sales_DE": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                              "connectionName": "shared_teams",
+                              "operationId": "PostMessageToChannel"
+                            },
+                            "parameters": {
+                              "teamId": "intl-team-id",
+                              "channelId": "intl-channel-id",
+                              "message": {
+                                "body": {
+                                  "content": "<p><strong>Anfrage (German Inquiry)</strong></p><p>Subject: @{triggerOutputs()?['body/subject']}</p><p>From: @{triggerOutputs()?['body/from']}</p><p>Preview: @{triggerOutputs()?['body/bodyPreview']}</p>",
+                                  "contentType": "html"
+                                }
+                              }
+                            }
+                          },
+                          "runAfter": {}
+                        },
+                        "Forward_to_Sales_DE": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                              "connectionName": "shared_office365",
+                              "operationId": "ForwardEmail"
+                            },
+                            "parameters": {
+                              "messageId": "@triggerOutputs()?['body/id']",
+                              "forwardEmailMessage": {
+                                "To": "sales-de@company.com",
+                                "Comment": "Automatically forwarded - German inquiry detected"
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Post_to_International_Sales_DE": [
+                              "Succeeded"
+                            ]
+                          }
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
